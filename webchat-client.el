@@ -11,11 +11,12 @@
   (setq port (or port webchat-client-server-port))
   (let ((buf (url-retrieve-synchronously (format "http://%s:%s/?start=%s" host port webchat-client--total-lines) t))
 		content)
-	(with-current-buffer buf
-	  (goto-char (point-min))
-	  (search-forward-regexp "^$")
-	  (setq content (read-from-whole-string (buffer-substring-no-properties (+ (point ) 1) (point-max)))))
-	(kill-buffer buf)
+	(unwind-protect 
+		(with-current-buffer buf
+		  (goto-char (point-min))
+		  (search-forward-regexp "^$")
+		  (setq content (read-from-whole-string (buffer-substring-no-properties (+ (point ) 1) (point-max)))))
+	  (kill-buffer buf))
 	(setq webchat-client--total-lines (car content))
 	(decode-coding-string (cdr content) 'utf-8-dos)))
 
