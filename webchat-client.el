@@ -1,5 +1,6 @@
 ;; 以下是client端代码
 (require 'url)
+(require 'thingatpt)
 (defvar webchat-client-server-host "localhost"
   "webchat的服务器地址")
 (defvar webchat-client-server-port 8000
