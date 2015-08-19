@@ -2,6 +2,7 @@
 ;; 以下是client端代码
 (require 'url)
 (require 'thingatpt)
+(require 'webchat-mode)
 (defvar webchat-client--total-lines 0
   "webchat客户端已经收到多少行聊天记录")
 (defun webchat-client--get-content(host port)
@@ -43,11 +44,6 @@
 		  (goto-char (point-max))
 		  (insert content))))))
 
-
-(define-derived-mode webchat-mode text-mode "WebChat"
-  "Major mode for running webchat"
-  (make-local-variable 'scroll-step)
-  (setq scroll-step 2))
 
 (defun webchat-client--talk (host port who)
   (interactive)
