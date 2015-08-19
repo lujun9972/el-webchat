@@ -2,6 +2,7 @@
 ;; 以下是client端代码
 (require 'url)
 (require 'thingatpt)
+(add-to-list 'load-path default-directory)
 (require 'webchat-mode)
 (defvar webchat-client--total-lines 0
   "webchat客户端已经收到多少行聊天记录")
