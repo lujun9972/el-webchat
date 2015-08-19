@@ -20,18 +20,28 @@
 	(elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
 	(elnode-http-return httpcon (prin1-to-string (cons webchat-server--total-lines new-content)))))
 
+(defvar webchat-server--push-client-connections nil)
+(defun webchat-server--register-as-push-handler (httpcon)
+  "客户端注册为服务器主动推送消息"
+  (let ((port (string-to-number (or (elnode-http-param httpcon "port") "9000")))
+		(host (process-contact httpcon :host)))
+	(add-to-list 'webchat-server--push-client-connections (open-network-stream "push-client" "push-client" host port))))
+
 (defun webchat-server--say-handler (httpcon)
   (let ((who (elnode-http-param httpcon "who"))
 		(content (elnode-http-param httpcon "content")))
 	(when (stringp content)
 	  (ring-insert-at-beginning webchat-server--content-ring (format "%s:\n\t%s\n" who content))
-	  (incf webchat-server--total-lines)))
+	  (incf webchat-server--total-lines)
+	  (mapc (lambda (proc)
+			  (process-send-string proc (format "%s:\n\t%s\n" who content))) webchat-server--push-client-connections)))
   (elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
   ;; (elnode-http-start httpcon 302 '("Location" . "/"))
   (elnode-http-return httpcon))
 
 (defconst webchat-urls
   `(("^/$" . webchat-server--get-content-handler)
+	("^/register-as-push/.*$" . webchat-server--register-as-push-handler)
 	("^/update/.*$" . webchat-server--say-handler)))
 
 
