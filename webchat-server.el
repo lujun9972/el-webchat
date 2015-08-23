@@ -27,14 +27,18 @@
 		(host (process-contact httpcon :host)))
 	(add-to-list 'webchat-server--push-client-connections (open-network-stream "push-client" "push-client" host port))))
 
+(defun webchat-server--format-message (who content)
+  "格式化聊天内容"
+  (format "%s-<%s>:\n\t%s\n" who (current-time-string) content))
+
 (defun webchat-server--say-handler (httpcon)
   (let ((who (elnode-http-param httpcon "who"))
 		(content (elnode-http-param httpcon "content")))
 	(when (stringp content)
-	  (ring-insert-at-beginning webchat-server--content-ring (format "%s:\n\t%s\n" who content))
+	  (ring-insert-at-beginning webchat-server--content-ring (webchat-server--format-message who content))
 	  (incf webchat-server--total-lines)
 	  (mapc (lambda (proc)
-			  (process-send-string proc (format "%s:\n\t%s\n" who content))) webchat-server--push-client-connections)))
+			  (process-send-string proc (webchat-server--format-message who content))) webchat-server--push-client-connections)))
   (elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
   ;; (elnode-http-start httpcon 302 '("Location" . "/"))
   (elnode-http-return httpcon))

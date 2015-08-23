@@ -53,10 +53,11 @@
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (switch-to-buffer (get-buffer-create webchat-client-content-buffer))
+  (org-mode)
   (select-window (split-window-below -4))
   (switch-to-buffer (get-buffer-create webchat-client-talk-buffer))
   (webchat-mode)
-  (local-set-key (kbd "<RET>") (lambda  ()
+  (local-set-key (kbd "C-<RET>") (lambda  ()
 								 (interactive)
 								 "Function called when return is pressed in interactive mode to talk"
 								 (let ((content (buffer-substring-no-properties (point-min) (point-max))))
@@ -65,6 +66,7 @@
   (webchat-client--register-as-push-client host port listener)
   (setq webchat-client--process
 		(make-network-process :name "webchat-client-content"
+							  :family 'ipv4
 							  :server t
 							  :service listener
 							  :buffer webchat-client-content-buffer
