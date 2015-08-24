@@ -57,7 +57,7 @@
   (select-window (split-window-below -4))
   (switch-to-buffer (get-buffer-create webchat-client-talk-buffer))
   (webchat-mode)
-  (local-set-key (kbd "C-<RET>") (lambda  ()
+  (local-set-key (kbd "<C-return>") (lambda  ()
 								 (interactive)
 								 "Function called when return is pressed in interactive mode to talk"
 								 (let ((content (buffer-substring-no-properties (point-min) (point-max))))

@@ -65,7 +65,7 @@
   (select-window (split-window-below -4))
   (switch-to-buffer (get-buffer-create webchat-client-talk-buffer))
   (webchat-mode)
-  (local-set-key (kbd "C-<RET>") (lambda ()
+  (local-set-key (kbd "<C-return>") (lambda ()
 								 (interactive)
 								 (webchat-client--talk host port who)))
   ;; (setq webchat-client--timer (run-with-idle-timer 1 0.3 (lambda ()
