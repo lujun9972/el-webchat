@@ -29,7 +29,7 @@
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
-  (format "%s-<%s>:\n\t%s\n" who (current-time-string) content))
+  (format "%s-<%s>:\n%s\n" who (current-time-string) (replace-regexp-in-string "^\\|[\r\n]+" "\t" content)))
 
 (defun webchat-server--say-handler (httpcon)
   (let ((who (elnode-http-param httpcon "who"))
