@@ -70,11 +70,12 @@
 							  :server t
 							  :service listener
 							  :buffer webchat-client-content-buffer
-							  :filter #'webchat-client--display-content)))
+							  :filter #'webchat-client--display-content))
+  (set-process-coding-system webchat-client--process 'utf-8 'utf-8))
 
 (defun webchat-quit ()
   (interactive)
-  (kill-process webchat-client--process)
+  (delete-process webchat-client--process)
   (select-window (get-buffer-window webchat-client-content-buffer))
   (kill-buffer-and-window))
 

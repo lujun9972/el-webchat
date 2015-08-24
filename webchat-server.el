@@ -26,14 +26,16 @@
   "客户端注册为服务器主动推送消息"
   (let* ((port (string-to-number (or (elnode-http-param httpcon "port") "9000")))
 		 (host (process-contact httpcon :host))
-		 (old-process (gethash (format "%s:%s" host port) webchat-server--push-client-connections-map)))
+		 (old-process (gethash (format "%s:%s" host port) webchat-server--push-client-connections-map))
+		 (new-process (open-network-stream "push-client" "push-client" host port)))
 	(when old-process
 	  (delete-process old-process))
-	(puthash (format "%s:%s" host port)  (open-network-stream "push-client" "push-client" host port) webchat-server--push-client-connections-map)))
+	(set-process-coding-system new-process 'utf-8 'utf-8)
+	(puthash (format "%s:%s" host port)   webchat-server--push-client-connections-map new-process)))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
-  (format "%s-<%s>:\n%s\n" who (current-time-string) (replace-regexp-in-string "^\\|[\r\n]+" "\t" content)))
+  (format "* %s-<%s>:\n%s\n" who (current-time-string)  content))
 
 (defun webchat-server--say-handler (httpcon)
   (let ((who (elnode-http-param httpcon "who"))
