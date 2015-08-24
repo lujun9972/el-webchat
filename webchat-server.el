@@ -28,7 +28,7 @@
 		 (host (process-contact httpcon :host))
 		 (old-process (gethash (format "%s:%s" host port) webchat-server--push-client-connections-map)))
 	(when old-process
-	  (kill-process old-process))
+	  (delete-process old-process))
 	(puthash (format "%s:%s" host port)  (open-network-stream "push-client" "push-client" host port) webchat-server--push-client-connections-map)))
 
 (defun webchat-server--format-message (who content)
