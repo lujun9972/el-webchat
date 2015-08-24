@@ -1,5 +1,6 @@
 ;; 以下是server端代码
 (require 'elnode)
+(require 'subr-x)
 (defvar webchat-server--total-lines 0
   "聊天室中总用有多少行内容")
 (defvar webchat-server-max-hold-lines 1000
@@ -20,12 +21,15 @@
 	(elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
 	(elnode-http-return httpcon (prin1-to-string (cons webchat-server--total-lines new-content)))))
 
-(defvar webchat-server--push-client-connections nil)
+(defvar webchat-server--push-client-connections-map (make-hash-table :test 'equal))
 (defun webchat-server--register-as-push-handler (httpcon)
   "客户端注册为服务器主动推送消息"
-  (let ((port (string-to-number (or (elnode-http-param httpcon "port") "9000")))
-		(host (process-contact httpcon :host)))
-	(add-to-list 'webchat-server--push-client-connections (open-network-stream "push-client" "push-client" host port))))
+  (let* ((port (string-to-number (or (elnode-http-param httpcon "port") "9000")))
+		 (host (process-contact httpcon :host))
+		 (old-process (gethash (format "%s:%s" host port) webchat-server--push-client-connections-map)))
+	(when old-process
+	  (kill-process old-process))
+	(puthash (format "%s:%s" host port)  (open-network-stream "push-client" "push-client" host port) webchat-server--push-client-connections-map)))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
@@ -38,7 +42,7 @@
 	  (ring-insert-at-beginning webchat-server--content-ring (webchat-server--format-message who content))
 	  (incf webchat-server--total-lines)
 	  (mapc (lambda (proc)
-			  (process-send-string proc (webchat-server--format-message who content))) webchat-server--push-client-connections)))
+			  (process-send-string proc (webchat-server--format-message who content))) (hash-table-values webchat-server--push-client-connections-map))))
   (elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
   ;; (elnode-http-start httpcon 302 '("Location" . "/"))
   (elnode-http-return httpcon))
