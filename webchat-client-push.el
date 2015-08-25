@@ -36,8 +36,9 @@
 		(when webchat-client-content-window
 		  (select-window webchat-client-content-window))
 		(with-current-buffer webchat-client-content-buffer
-		  (goto-char (point-max))
-		  (insert content))))))
+		  (let ((inhibit-read-only t))
+			(goto-char (point-max))
+			(insert content)))))))
 
 (defvar webchat-client-talk-buffer "*webchat-talk*"
   "输入聊天内容的buffer")
@@ -53,7 +54,8 @@
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (switch-to-buffer (get-buffer-create webchat-client-content-buffer))
-  (org-mode)
+  (webchat-mode)
+  (read-only-mode)
   (select-window (split-window-below -4))
   (switch-to-buffer (get-buffer-create webchat-client-talk-buffer))
   (webchat-mode)
