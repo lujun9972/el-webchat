@@ -53,12 +53,7 @@
 					 (read-number "请输入服务端口: " 8000)
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
-  (switch-to-buffer (get-buffer-create webchat-client-content-buffer))
-  (webchat-mode)
-  (read-only-mode)
-  (select-window (split-window-below -4))
-  (switch-to-buffer (get-buffer-create webchat-client-talk-buffer))
-  (webchat-mode)
+  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
   (local-set-key (kbd "<C-return>") (lambda  ()
 								 (interactive)
 								 "Function called when return is pressed in interactive mode to talk"

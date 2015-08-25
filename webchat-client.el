@@ -42,8 +42,9 @@
 		(when webchat-client-content-window
 		  (select-window webchat-client-content-window))
 		(with-current-buffer webchat-client-content-buffer
-		  (goto-char (point-max))
-		  (insert content))))))
+		  (let ((inhibit-read-only t))
+			(goto-char (point-max))
+			(insert content)))))))
 
 
 (defun webchat-client--talk (host port who)
@@ -60,11 +61,7 @@
   (interactive (list (read-string "请输入服务器地址: " "localhost")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
-  (switch-to-buffer (get-buffer-create webchat-client-content-buffer))
-  (org-mode)
-  (select-window (split-window-below -4))
-  (switch-to-buffer (get-buffer-create webchat-client-talk-buffer))
-  (webchat-mode)
+  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
   (local-set-key (kbd "<C-return>") (lambda ()
 								 (interactive)
 								 (webchat-client--talk host port who)))
