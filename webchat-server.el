@@ -31,7 +31,7 @@
 	(when old-process
 	  (delete-process old-process))
 	(set-process-coding-system new-process 'utf-8 'utf-8)
-	(puthash (format "%s:%s" host port)   webchat-server--push-client-connections-map new-process)))
+	(puthash (format "%s:%s" host port)  new-process webchat-server--push-client-connections-map)))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
