@@ -1,0 +1,39 @@
+#+TITLE: README
+#+AUTHOR: DarkSun
+#+CATEGORY: el-webchat
+#+DATE: [2015-08-27 周四 18:45]
+#+OPTIONS: ^:{}
+
+* el-webchat介绍
+这是一款基于elnode的简易聊天室实现.
+
+* 使用方法
+
+** 启动server端
+webchat-server.el为实现server端的代码,其支持以emacs script的方式直接调用. 方式为:
+#+BEGIN_SRC sh
+  # 給webchat-server.el添加执行权限
+  chmod +x webchat-server.el
+
+  # 执行该文件,带一个端口参数,表示该服务监听哪个端口
+  webchat-server.el 8000
+
+  # 若为windows环境,则可以执行以下命令
+  emacs.exe --script webchat-server.el 8000
+#+END_SRC
+
+** 启动client端
+目前client端提供两种方式的实现,一种是客户端主动向server端拉取聊天内容的方式,实现文件为`webchat-talk.el'.
+
+还有一种实现是server端在有新的聊天内容时向client端推送聊天内容,实现文件为`webchat-talk-push.el'
+
+无论是哪种实现方式,启动client端的方式都是
+
+1. 加载client端实现文件
+   #+BEGIN_SRC emacs-lisp
+     (require 'webchat-client)
+     ;; 或
+     (require 'webchat-client-push)
+   #+END_SRC
+2. 调用命令 M-x webchat-talk
+   
