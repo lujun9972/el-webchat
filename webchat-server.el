@@ -1,4 +1,6 @@
+#! /usr/bin/emacs --script
 ;; 以下是server端代码
+(package-initialize)
 (require 'elnode)
 (require 'subr-x)
 (defvar webchat-server--total-lines 0
@@ -63,3 +65,11 @@
   (elnode-start 'webchat-server--dispatcher-handler :port port))
 
 (provide 'webchat-server)
+
+;; 以下操作是为了兼容#!emacs --script方式
+(when (member "-scriptload" command-line-args)
+  (let ((port (string-to-number (car command-line-args-left))))
+  (webchat-server port)
+  (while t
+	(sit-for 1))
+  (setq command-line-args-left nil)))
