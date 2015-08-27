@@ -58,9 +58,8 @@
 (defun webchat-server--dispatcher-handler (httpcon)
   (elnode-dispatcher httpcon webchat-urls))
 
-(defun webchat-server()
-  (interactive)
-  (let ((port (read-number "请输入监听端口: ")))
-	(elnode-start 'webchat-server--dispatcher-handler :port port)))
+(defun webchat-server(port)
+  (interactive `(,(read-number "请输入监听端口" 8000)))
+  (elnode-start 'webchat-server--dispatcher-handler :port port))
 
 (provide 'webchat-server)
