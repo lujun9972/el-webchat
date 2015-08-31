@@ -5,7 +5,9 @@
 #+OPTIONS: ^:{}
 
 * el-webchat介绍
-这是一款基于elnode的简易聊天室实现.
+这是一款基于elnode的简易聊天室实现. 
+
+[[file:screen-1.jpg]]
 
 * 使用方法
 
