@@ -35,3 +35,5 @@
 
 
 ;; (webchat-server-dispatcher 8000)
+
+(provide 'webchat-server-dispatcher)
