@@ -24,4 +24,14 @@
   (process-send-string connection (prin1-to-string webchat-server-topic-port-alist))
   (delete-process connection))
 
+;; 以下操作是为了兼容#!emacs --script方式
+(when (member "-scriptload" command-line-args)
+  (let ((port (string-to-number (car command-line-args-left))))
+  (webchat-server-dispatcher port)
+  (message "webchat-server-dispatcher loaded")
+  (while t
+	(sit-for 1))
+  (setq command-line-args-left nil)))
+
+
 ;; (webchat-server-dispatcher 8000)
