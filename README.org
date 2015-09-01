@@ -9,8 +9,8 @@
 
 [[file:screen-1.jpg]]
 
-* 使用方法
-
+* 单一聊天室的使用方法
+最简单的使用方式是启动一个webchat-server,让所有人都在同一个聊天室内交流. 
 ** 启动server端
 webchat-server.el为实现server端的代码,其支持以emacs script的方式直接调用. 方式为:
 #+BEGIN_SRC sh
@@ -38,4 +38,22 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
      (require 'webchat-client-push)
    #+END_SRC
 2. 调用命令 M-x webchat-talk
-   
+3. 在弹出的*webchat-talk* buffer中输入内容,并按C-RET发送内容. 聊天内容会显示在*webchat-content*中
+
+* 多聊天室的使用方式
+在webchat-server之上,封装了一层webchat-server-dispatcher,使得交流着可以根据不同的主题进入不同的聊天室.
+** 启动server端
+1. 加载webchat-server-dispatcher.el
+   #+BEGIN_SRC emacs-lisp
+     (require 'webchat-server-dispatcher)
+   #+END_SRC
+2. 调用命令M-x webchat-server-dispatcher,并输入监听端口
+** 启动client端
+1. 加载client端实现文件
+   #+BEGIN_SRC emacs-lisp
+     (require 'webchat-client)
+     ;; 或
+     (require 'webchat-client-push)
+   #+END_SRC
+2. 调用命令 M-x webchat-client
+3. 在弹出的*webchat-talk* buffer中输入内容,并按C-RET发送内容. 聊天内容会显示在*webchat-content*中
