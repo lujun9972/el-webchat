@@ -3,6 +3,7 @@
 (package-initialize)
 (require 'elnode)
 (require 'subr-x)
+(require 'cl)
 (defvar webchat-server--total-lines 0
   "聊天室中总用有多少行内容")
 (defvar webchat-server-max-hold-lines 1000
@@ -44,7 +45,7 @@
 		(content (elnode-http-param httpcon "content")))
 	(when (stringp content)
 	  (ring-insert-at-beginning webchat-server--content-ring (webchat-server--format-message who content))
-	  (incf webchat-server--total-lines)
+	  (setq webchat-server--total-lines (1+ webchat-server--total-lines))
 	  (mapc (lambda (proc)
 			  (process-send-string proc (webchat-server--format-message who content))) (hash-table-values webchat-server--push-client-connections-map))))
   (elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
