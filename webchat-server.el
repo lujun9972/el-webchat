@@ -1,6 +1,7 @@
 #! /usr/bin/emacs --script
 ;; 以下是server端代码
-(package-initialize)
+(unless package--initialized
+  (package-initialize))
 (require 'elnode)
 (require 'subr-x)
 (require 'cl)
