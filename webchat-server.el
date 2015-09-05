@@ -1,6 +1,7 @@
 #! /usr/bin/emacs --script
 ;; 以下是server端代码
-(unless package--initialized
+(unless (and (boundp 'package--initialized)
+			 package--initialized)
   (package-initialize))
 (require 'elnode)
 (require 'subr-x)
