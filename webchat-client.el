@@ -58,17 +58,18 @@
 (defvar webchat-client-talk-buffer "*webchat-talk*"
   "输入聊天内容的buffer")
 (defun webchat-talk (host port who)
-  (interactive (list (read-string "请输入服务器地址: " "localhost")
+  (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
   (local-set-key (kbd "<C-return>") (lambda ()
 								 (interactive)
 								 (webchat-client--talk host port who)))
-  ;; (setq webchat-client--timer (run-with-idle-timer 1 0.3 (lambda ()
-  ;; 														   (webchat-client--display-content host port))))
-  (setq webchat-client--timer (run-with-timer 1 0.3 (lambda ()
-													  (webchat-client--display-content host port)))))
+   (setq webchat-client--timer (run-with-idle-timer 1 0.3 (lambda ()
+   														   (webchat-client--display-content host port))))
+  ;(setq webchat-client--timer (run-with-timer 1 0.3 (lambda ()
+;						      (webchat-client--display-content host port))))
+  )
 
 (defun webchat-quit ()
   (interactive)
@@ -90,7 +91,7 @@
 
 
 (defun webchat-client(host port who)
-  (interactive (list (read-string "请输入服务器地址: " "localhost")
+  (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (let ((p1 (make-network-process :name "webchat-dispatcher"
