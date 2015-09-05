@@ -49,7 +49,7 @@
 
 (defvar webchat-client--process nil)
 (defun webchat-talk (host port listener who)
-  (interactive (list (read-string "请输入服务器地址: " "localhost")
+  (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
@@ -90,7 +90,7 @@
 
 
 (defun webchat-client(host port listener who)
-  (interactive (list (read-string "请输入服务器地址: " "localhost")
+  (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
