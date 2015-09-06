@@ -63,6 +63,7 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 * TODOS
 + [ ] 可以在客户端自由添加channel
 + [X] 高亮代码
+  [[file:screen3.jpeg]]
 + [X] 显示图片
   [[file:screen2.jpeg]]
 + [ ] 提供方法上传图片
