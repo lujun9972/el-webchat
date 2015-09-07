@@ -46,7 +46,7 @@
 		  (let ((inhibit-read-only t)
 				(pos (point)))
 			(insert content)
-			(webchat-display-inline-images nil t pos (point-max))))))))
+			(webchat-display-inline-images-async nil t pos (point-max))))))))
 
 
 (defun webchat-client--talk (host port who)

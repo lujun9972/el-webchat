@@ -40,7 +40,7 @@
 		  (let ((inhibit-read-only t)
 				(pos (point-max)))
 			(insert content)
-			(webchat-display-inline-images nil t pos (point-max))))))))
+			(webchat-display-inline-images-async nil t pos (point-max))))))))
 
 (defvar webchat-client-talk-buffer "*webchat-talk*"
   "输入聊天内容的buffer")
