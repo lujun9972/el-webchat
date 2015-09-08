@@ -3,6 +3,7 @@
 (require 'url)
 (require 'thingatpt)
 (add-to-list 'load-path default-directory)
+(require 'webchat-misc)
 (require 'webchat-mode)
 (defvar webchat-client--total-lines 0
   "webchat客户端已经收到多少行聊天记录")
@@ -91,23 +92,22 @@
 		   value)
 		  (t (cdr value)))))
 
-
 (defun webchat-client(host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
-  (let ((p1 (make-network-process :name "webchat-dispatcher"
+  (let* ((p1 (make-network-process :name "webchat-dispatcher"
 								  :buffer "*webchat-dispatcher*"
 								  :family 'ipv4
 								  :host host
-								  :service port)))
-	(while (not (eq (process-status p1) 'closed))
-	  (accept-process-output p1 0.1))
+								  :service port))
+		 (channel-list (read-from-process-wait p1))
+		 (channel (ido-completing-read "channel: " channel-list)))
+	  (write-to-process p1 'REQUEST-CHANNEL-PORT channel)
+	(setq port (car (read-from-process-wait p1)))
 	(with-current-buffer (process-buffer p1)
-	  (setq port (webchat-client--select-from-alist  (car (read-from-string (buffer-substring-no-properties (point-min) (point-max)))) "channel: "))
 	  (delete-process p1)
 	  (kill-buffer))
 	(webchat-talk host port who)))
-
 
 (provide 'webchat-client)
