@@ -80,17 +80,6 @@
   (select-window (get-buffer-window webchat-client-content-buffer))
   (kill-buffer-and-window))
 
-(defun webchat-client--select-from-alist (alist &optional prompt)
-  ""
-  (unless prompt
-	(setq prompt ""))
-  (let* ((keys (mapcar #'car alist))
-		 ;; (ido-separator "\n")
-		 (key (ido-completing-read prompt keys))
-		 (value (cdr (assoc key alist))))
-	(cond ((atom value)
-		   value)
-		  (t (cdr value)))))
 
 (defun webchat-client(host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
