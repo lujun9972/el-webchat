@@ -17,12 +17,27 @@
 							  :family 'ipv4
 							  :server t
 							  :service port
-							  :log #'webchat-server-dispatch-topics))
+							  :log #'webchat-server-dispatch-topics
+							  :filter #'webchat-server-dispatch-response))
   (mapcar #'webchat-server--build-server-process (mapcar #'cdr webchat-server-topic-port-alist)))
 
 (defun webchat-server-dispatch-topics (server connection msg)
-  (process-send-string connection (prin1-to-string webchat-server-topic-port-alist))
-  (delete-process connection))
+  (set-process-buffer connection (get-buffer-create (process-name connection)))
+  (process-send-string connection (prin1-to-string (mapcar #'car webchat-server-topic-port-alist))))
+
+(defun webchat-server-dispatch-response (process msg)
+  (with-current-buffer (process-buffer process)
+	(goto-char (point-max))
+	(insert msg))
+  (let ((request (read-from-process process)))
+	(when request
+	  (let* ((cmd (car request))
+			 (data (cdr request))
+			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
+		(write-to-process process (apply cmd-fn data))))))
+
+(defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
+  (cdr (assoc-string channel webchat-server-topic-port-alist)))
 
 ;; 以下操作是为了兼容#!emacs --script方式
 (when (member "-scriptload" command-line-args)
