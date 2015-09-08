@@ -58,7 +58,7 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
      ;; 或
      (require 'webchat-client-push)
    #+END_SRC
-2. 调用命令 M-x webchat-client
+2. 调用命令 M-x webchat-client. 在选择channel时可以输入一个不存在的channel,webchat-server-dispatcher会自动分配新服务进程为该channel提供服务.
 3. 在弹出的*webchat-talk* buffer中输入内容,并按C-RET发送内容. 聊天内容会显示在*webchat-content*中
 * TODOS
 + [X] 可以在客户端自由添加channel
