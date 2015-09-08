@@ -1,3 +1,5 @@
+(add-to-list 'load-path default-directory)
+(require 'webchat-misc)
 (defvar webchat-server-topic-port-alist '(("cartoon" . 8001) ("emacs" . 8002))
   "主题与端口的对应表")
 (defvar webchat-server-dispatcher-process nil)
