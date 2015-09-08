@@ -61,7 +61,7 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 2. 调用命令 M-x webchat-client
 3. 在弹出的*webchat-talk* buffer中输入内容,并按C-RET发送内容. 聊天内容会显示在*webchat-content*中
 * TODOS
-+ [ ] 可以在客户端自由添加channel
++ [X] 可以在客户端自由添加channel
 + [X] 高亮代码
   [[file:screen3.jpeg]]
 + [X] 显示图片
