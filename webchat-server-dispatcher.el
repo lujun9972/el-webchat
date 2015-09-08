@@ -4,7 +4,7 @@
   "主题与端口的对应表")
 (defvar webchat-server-dispatcher-process nil)
 
-(defun webchat-server--build-server-process (port)
+(defun webchat-server--build-service-process (port)
   "创建webchat-server进程"
   (let ((emacs-bin-path (concat invocation-directory invocation-name)))
 	(start-process "webchat-server" "webchat-server" emacs-bin-path "--script" "webchat-server.el" (number-to-string port))))
@@ -21,7 +21,7 @@
 							  :service port
 							  :log #'webchat-server-dispatch-topics
 							  :filter #'webchat-server-dispatch-response))
-  (mapcar #'webchat-server--build-server-process (mapcar #'cdr webchat-server-topic-port-alist)))
+  (mapcar #'webchat-server--build-service-process (mapcar #'cdr webchat-server-topic-port-alist)))
 
 (defun webchat-server-dispatch-topics (server connection msg)
   (set-process-buffer connection (get-buffer-create (process-name connection)))
@@ -38,8 +38,17 @@
 			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
 		(write-to-process process (apply cmd-fn data))))))
 
+(defun webchat-server-dispatch--get-next-service-port (base)
+  (+ 1 base))
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
-  (cdr (assoc-string channel webchat-server-topic-port-alist)))
+  (let ((port (cdr (assoc-string channel webchat-server-topic-port-alist)))
+		(max-service-port (apply #'max (mapcar #'cdr webchat-server-topic-port-alist))))
+	(unless port
+	  (setq port (webchat-server-dispatch--get-next-service-port max-service-port))
+	  (webchat-server--build-service-process port)
+	  (sit-for 1))						;等待1s,保证服务启动完成
+	(add-to-list 'webchat-server-topic-port-alist (cons channel port) t)
+	port))
 
 ;; 以下操作是为了兼容#!emacs --script方式
 (when (member "-scriptload" command-line-args)
