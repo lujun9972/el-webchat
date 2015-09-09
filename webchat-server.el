@@ -66,7 +66,7 @@
 	;; (elnode-http-start httpcon 302 '("Location" . "/"))
 	(elnode-http-return httpcon upload-file-path)))
 
-(fset 'webchat-server--upload-files-handler (elnode-webserver-handler-maker default-directory))
+(fset 'webchat-server--upload-files-handler (elnode-webserver-handler-maker default-directory)) ;此处doc-root貌似只能用default-directory不能用"./",不要问我为什么,我想静静......
 
 (defconst webchat-urls
   `(("^/$" . webchat-server--get-content-handler)
@@ -81,9 +81,7 @@
 
 (defun webchat-server(port)
   (interactive `(,(read-number "请输入监听端口" 8000)))
-  (elnode-start 'webchat-server--dispatcher-handler :port port)
-  ;; 简单起见,开个新webserver处理图像的显示
-  (elnode-make-webserver default-directory 7000))
+  (elnode-start 'webchat-server--dispatcher-handler :port port))
 
 
 (provide 'webchat-server)

@@ -76,4 +76,6 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 + [X] 显示图片
   [[file:screen2.jpeg]]
 + [X] 提供方法上传图片
-+ [ ] 改为不再基于elnode
++ [ ] 保存上传文件时,文件名基于内容签名重命名
++ [ ] 提供选项由用户自己决定是否显示http url图片
++ [ ] +改为不再基于elnode+
