@@ -39,7 +39,7 @@
 		(write-to-process process (apply cmd-fn data))))))
 
 (defun webchat-server-dispatch--get-next-service-port (base)
-  (while (local-port-used-p (base))
+  (while (local-port-used-p base)
 	(setq base (+ 1 base)))
   base)
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
