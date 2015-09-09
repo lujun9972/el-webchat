@@ -10,8 +10,17 @@
 [[file:screen-1.jpg]]
 
 * Requirment
-1. 使用package安装elnode
-2. 使用package安装htmlize
+** 使用package安装elnode
+** 使用package安装http-post-simple
+** 使用package安装htmlize
+** 修改elnode
+由于elnode在处理multipart的时候存在一个小BUG,无法处理http-post-simple upload file时的报文,需要对它进行一些小修改,步骤如下
+1. 通过 =M-x find-library= 找到elnode.el的地址,一般在目录"~/.emacs.d/elpa/elnode-20140203.1506"下
+2. 删除该目录下的elnode.elc文件
+3. 找到elnode.el中的elnode--http-mp-decode函数
+4. 将函数中的"content-disposition"改为"Content-Disposition"
+5. 保存退出,重启Emacs
+   
 * 单一聊天室的使用方法
 最简单的使用方式是启动一个webchat-server,让所有人都在同一个聊天室内交流. 
 ** 启动server端
@@ -66,5 +75,5 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
   [[file:screen3.jpeg]]
 + [X] 显示图片
   [[file:screen2.jpeg]]
-+ [ ] 提供方法上传图片
++ [X] 提供方法上传图片
 + [ ] 改为不再基于elnode

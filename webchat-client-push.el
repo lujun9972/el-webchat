@@ -77,7 +77,7 @@
 	(let ((upload-url (format "http://%s:%s/upload/" host port)))
 	  (url-upload-file upload-url file)
 	  (with-current-buffer webchat-client-talk-buffer
-		(insert (format "http://%s:%s/upload-files/%s" host port (file-name-nondirectory file)))))))
+		(insert (format "[[http://%s:%s/upload-files/%s]]" host 7000 (file-name-nondirectory file)))))))
 
 (defun webchat-quit ()
   (interactive)

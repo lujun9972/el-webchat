@@ -72,7 +72,12 @@
    														   (webchat-client--display-content host port))))
   ;(setq webchat-client--timer (run-with-timer 1 0.3 (lambda ()
 ;						      (webchat-client--display-content host port))))
-  )
+  (defun webchat-client-upload-file (file)
+	(interactive "f")
+	(let ((upload-url (format "http://%s:%s/upload/" host port)))
+	  (url-upload-file upload-url file)
+	  (with-current-buffer webchat-client-talk-buffer
+		(insert (format "[[http://%s:%s/upload-files/%s]]" host 7000 (file-name-nondirectory file)))))))
 
 (defun webchat-quit ()
   (interactive)
