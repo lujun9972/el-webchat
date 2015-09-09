@@ -66,11 +66,8 @@
 	;; (elnode-http-start httpcon 302 '("Location" . "/"))
 	(elnode-http-return httpcon upload-file-path)))
 
-(defun webchat-server--upload-files-handler (httpcon)
-  (elnode-docroot-for "~/el-webchat/upload-files"
-	with file-var
-	on httpcon
-	do (elnode-send-file file-var)))
+(fset 'webchat-server--upload-files-handler (elnode-webserver-handler-maker "./"))
+;; (fset 'webchat-server--upload-files-handler #'elnode-webserver)
 
 (defconst webchat-urls
   `(("^/$" . webchat-server--get-content-handler)
