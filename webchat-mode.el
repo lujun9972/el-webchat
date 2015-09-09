@@ -1,7 +1,8 @@
+(require 'org)
 (unless (and (boundp 'package--initialized)
 			 package--initialized)
   (package-initialize))
-(require 'org)
+
 (define-derived-mode webchat-mode org-mode "WebChat"
   "Major mode for running webchat"
   (make-local-variable 'scroll-step)
@@ -178,5 +179,6 @@ BEG and END default to the buffer boundaries."
 	  (setq ov (make-overlay start end))
 	  (overlay-put ov 'display img)
 	  (overlay-put ov 'face 'default))))
+
 
 (provide 'webchat-mode)

@@ -57,12 +57,12 @@
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
-  (local-set-key (kbd "<C-return>") (lambda  ()
-								 (interactive)
-								 "Function called when return is pressed in interactive mode to talk"
-								 (let ((content (buffer-substring-no-properties (point-min) (point-max))))
-								   (webchat-client--say host port who content)
-								   (erase-buffer))))
+  (local-set-key (kbd "<C-return>") (lambda ()
+									  (interactive)
+									  "Function called when return is pressed in interactive mode to talk"
+									  (let ((content (buffer-substring-no-properties (point-min) (point-max))))
+										(webchat-client--say host port who content)
+										(erase-buffer))))
   (webchat-client--register-as-push-client host port listener)
   (setq webchat-client--process
 		(make-network-process :name "webchat-client-content"
@@ -71,7 +71,13 @@
 							  :service listener
 							  :buffer webchat-client-content-buffer
 							  :filter #'webchat-client--display-content))
-  (set-process-coding-system webchat-client--process 'utf-8 'utf-8))
+  (set-process-coding-system webchat-client--process 'utf-8 'utf-8)
+  (defun webchat-client-upload-file (file)
+	(interactive "f")
+	(let ((upload-url (format "http://%s:%s/upload/" host port)))
+	  (url-upload-file upload-url file)
+	  (with-current-buffer webchat-client-talk-buffer
+		(insert (format "http://%s:%s/upload-files/%s" host port (file-name-nondirectory file)))))))
 
 (defun webchat-quit ()
   (interactive)
@@ -86,16 +92,17 @@
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (let* ((p1 (make-network-process :name "webchat-dispatcher"
-								  :buffer "*webchat-dispatcher*"
-								  :family 'ipv4
-								  :host host
-								  :service port))
+								   :buffer "*webchat-dispatcher*"
+								   :family 'ipv4
+								   :host host
+								   :service port))
 		 (channel-list (read-from-process-wait p1))
 		 (channel (ido-completing-read "channel: " channel-list)))
-	  (write-to-process p1 'REQUEST-CHANNEL-PORT channel)
+	(write-to-process p1 'REQUEST-CHANNEL-PORT channel)
 	(setq port (car (read-from-process-wait p1)))
 	(with-current-buffer (process-buffer p1)
 	  (delete-process p1)
 	  (kill-buffer))
 	(webchat-talk host port listener who)))
+
 (provide 'webchat-client)

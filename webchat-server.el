@@ -49,14 +49,34 @@
 	  (ring-insert-at-beginning webchat-server--content-ring (webchat-server--format-message who content))
 	  (setq webchat-server--total-lines (1+ webchat-server--total-lines))
 	  (mapc (lambda (proc)
-			  (process-send-string proc (webchat-server--format-message who content))) (hash-table-values webchat-server--push-client-connections-map))))
+			  (process-send-string proc (webchat-server--format-message who content)))
+			(hash-table-values webchat-server--push-client-connections-map))))
   (elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
   ;; (elnode-http-start httpcon 302 '("Location" . "/"))
   (elnode-http-return httpcon))
 
+(defun webchat-server--upload-handler (httpcon)
+  (let* ((upload-file (elnode-http-param httpcon "uploadfile"))
+		 (upload-file-name (get-text-property 0 :elnode-filename upload-file))
+		 (upload-file-path (format "upload-files/%s" (file-name-nondirectory  upload-file-name))))
+	(when (stringp upload-file)
+	  (with-temp-file upload-file-path
+		(insert (string-as-multibyte upload-file))))
+	(elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
+	;; (elnode-http-start httpcon 302 '("Location" . "/"))
+	(elnode-http-return httpcon upload-file-path)))
+
+(defun webchat-server--upload-files-handler (httpcon)
+  (elnode-docroot-for "~/el-webchat/upload-files"
+	with file-var
+	on httpcon
+	do (elnode-send-file file-var)))
+
 (defconst webchat-urls
   `(("^/$" . webchat-server--get-content-handler)
 	("^/register-as-push/.*$" . webchat-server--register-as-push-handler)
+	("^/upload/.*$" . webchat-server--upload-handler)
+	("^/upload-files/.*$" . webchat-server--upload-files-handler)
 	("^/update/.*$" . webchat-server--say-handler)))
 
 
