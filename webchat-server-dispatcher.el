@@ -39,14 +39,17 @@
 		(write-to-process process (apply cmd-fn data))))))
 
 (defun webchat-server-dispatch--get-next-service-port (base)
-  (+ 1 base))
+  (while (local-port-used-p (base))
+	(setq base (+ 1 base)))
+  base)
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
   (let ((port (cdr (assoc-string channel webchat-server-topic-port-alist)))
 		(max-service-port (apply #'max (mapcar #'cdr webchat-server-topic-port-alist))))
 	(unless port
-	  (setq port (webchat-server-dispatch--get-next-service-port max-service-port))
+	  (setq port (webchat-server-dispatch--get-next-service-port (+ 1 max-service-port)))
 	  (webchat-server--build-service-process port)
-	  (sit-for 1))						;等待1s,保证服务启动完成
+	  (while (not (local-port-used-p port))
+		(sit-for 1)))
 	(add-to-list 'webchat-server-topic-port-alist (cons channel port) t)
 	port))
 

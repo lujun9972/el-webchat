@@ -21,4 +21,14 @@
   (defun write-to-process (process &rest objs)
 	(process-send-string process (prin1-to-string objs)))
 
+(defun local-port-used-p (port)
+  "探测本地指定端口是否已被占用"
+  (let ((p1 (ignore-errors (make-network-process :name "connection test"
+												 :service port
+												 ;; :family 'ipv4
+												 :host 'local))))
+	(when p1
+	  (delete-process p1)
+	  t)))
+
 (provide 'webchat-misc)
