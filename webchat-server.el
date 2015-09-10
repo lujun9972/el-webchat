@@ -57,7 +57,8 @@
 										  (when  (cl-some (lambda (reg)
 															(string-match-p reg event))
 														  '("finished" "exited" "connection broken"))
-											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections)))))))
+											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections))
+											(delete-process proc))))))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
