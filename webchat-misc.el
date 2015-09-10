@@ -58,4 +58,8 @@
 	(url-retrieve url (lambda (status)
 						(kill-buffer (current-buffer))) nil t)))
 
+(defun insert-function-button (label fn)
+  "插入名为`label'的按钮,当按下时会出发fn函数"
+  (insert-button label 'follow-link t 'face 'mode-line-inactive 'action fn))
+
 (provide 'webchat-misc)

@@ -51,13 +51,36 @@
 					 (read-number "请输入服务端口: " 8000)
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
+
+  (defun webchat-client-upload-file (&optional file)
+	(interactive)
+	(setq file (or file (read-file-name "upload file:")))
+	(let* ((upload-url (format "http://%s:%s/upload/" host port))
+		   (upload-file-path (car  (url-upload-file upload-url file))))
+	  (with-current-buffer webchat-client-talk-buffer
+		(goto-char (point-max))
+		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path)))))
+
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
+  (with-current-buffer webchat-client-talk-buffer
+	(insert-function-button "upload file" (lambda (btn)
+											(webchat-client-upload-file)))
+	(insert "\t")
+	(insert-function-button "show images" (lambda (btn)
+											(setq webchat-client-display-image t)))
+	(insert "\t")
+	(insert-function-button "no images" (lambda (btn)
+											(setq webchat-client-display-image nil)))
+
+	(newline)
+	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t)))
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)
 									  "Function called when return is pressed in interactive mode to talk"
-									  (let ((content (buffer-substring-no-properties (point-min) (point-max))))
-										(webchat-client--say host port who content)
-										(erase-buffer))))
+									  (goto-char (point-min))
+									  (forward-line)
+									  (let ((content (delete-and-extract-region (point) (point-max))))
+										(webchat-client--say host port who content))))
   (webchat-client--register-as-push-client host port listener)
   (setq webchat-client--process
 		(make-network-process :name "webchat-client-content"
@@ -66,13 +89,7 @@
 							  :service listener
 							  :buffer webchat-client-content-buffer
 							  :filter #'webchat-client--display-content))
-  (set-process-coding-system webchat-client--process 'utf-8 'utf-8)
-  (defun webchat-client-upload-file (file)
-	(interactive "f")
-	(let* ((upload-url (format "http://%s:%s/upload/" host port))
-		   (upload-file-path (car  (url-upload-file upload-url file))))
-	  (with-current-buffer webchat-client-talk-buffer
-		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path))))))
+  (set-process-coding-system webchat-client--process 'utf-8 'utf-8))
 
 (defun webchat-quit ()
   (interactive)

@@ -70,20 +70,40 @@
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
-  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
-  (local-set-key (kbd "<C-return>") (lambda ()
-								 (interactive)
-								 (webchat-client--talk host port who)))
-   (setq webchat-client--timer (run-with-idle-timer 1 0.3 (lambda ()
-   														   (webchat-client--display-content host port))))
-  ;(setq webchat-client--timer (run-with-timer 1 0.3 (lambda ()
-;						      (webchat-client--display-content host port))))
-  (defun webchat-client-upload-file (file)
-	(interactive "f")
+  (defun webchat-client-upload-file (&optional file)
+	(interactive)
+	(setq file (or file (read-file-name "upload file:")))
 	(let* ((upload-url (format "http://%s:%s/upload/" host port))
 		   (upload-file-path (car  (url-upload-file upload-url file))))
 	  (with-current-buffer webchat-client-talk-buffer
-		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path))))))
+		(goto-char (point-max))
+		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path)))))
+  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
+  (with-current-buffer webchat-client-talk-buffer
+	(insert-function-button "upload file" (lambda (btn)
+											(webchat-client-upload-file)))
+	(insert "\t")
+	(insert-function-button "show images" (lambda (btn)
+											(setq webchat-client-display-image t)))
+	(insert "\t")
+	(insert-function-button "no images" (lambda (btn)
+											(setq webchat-client-display-image nil)))
+
+	(newline)
+	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t)))
+  
+  (local-set-key (kbd "<C-return>") (lambda ()
+									  (interactive)
+									  "Function called when return is pressed in interactive mode to talk"
+									  (goto-char (point-min))
+									  (forward-line)
+									  (let ((content (delete-and-extract-region (point) (point-max))))
+										(webchat-client--say host port who content))))
+  (setq webchat-client--timer (run-with-idle-timer 1 0.3 (lambda ()
+   														   (webchat-client--display-content host port))))
+  ;; (setq webchat-client--timer (run-with-timer 1 0.3 (lambda ()
+  ;; 													  (webchat-client--display-content host port))))
+  )
 
 (defun webchat-quit ()
   (interactive)
@@ -97,13 +117,13 @@
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (let* ((p1 (make-network-process :name "webchat-dispatcher"
-								  :buffer "*webchat-dispatcher*"
-								  :family 'ipv4
-								  :host host
-								  :service port))
+								   :buffer "*webchat-dispatcher*"
+								   :family 'ipv4
+								   :host host
+								   :service port))
 		 (channel-list (read-from-process-wait p1))
 		 (channel (ido-completing-read "channel: " channel-list)))
-	  (write-to-process p1 'REQUEST-CHANNEL-PORT channel)
+	(write-to-process p1 'REQUEST-CHANNEL-PORT channel)
 	(setq port (car (read-from-process-wait p1)))
 	(with-current-buffer (process-buffer p1)
 	  (delete-process p1)

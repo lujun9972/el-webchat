@@ -20,7 +20,7 @@
   (switch-to-buffer (get-buffer-create content-buffer))
   (webchat-mode)
   (read-only-mode)
-  (select-window (split-window-below -4))
+  (select-window (split-window-below -6))
   (switch-to-buffer (get-buffer-create talk-buffer))
   (webchat-mode))
 
