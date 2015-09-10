@@ -29,17 +29,35 @@
 	(elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
 	(elnode-http-return httpcon (prin1-to-string (cons webchat-server--total-lines new-content)))))
 
-(defvar webchat-server--push-client-connections-map (make-hash-table :test 'equal))
-(defun webchat-server--register-as-push-handler (httpcon)
-  "客户端注册为服务器主动推送消息"
-  (let* ((port (string-to-number (or (elnode-http-param httpcon "port") "9000")))
-		 (host (process-contact httpcon :host))
-		 (old-process (gethash (format "%s:%s" host port) webchat-server--push-client-connections-map))
-		 (new-process (open-network-stream "push-client" "push-client" host port)))
-	(when old-process
-	  (delete-process old-process))
-	(set-process-coding-system new-process 'utf-8 'utf-8)
-	(puthash (format "%s:%s" host port)  new-process webchat-server--push-client-connections-map)))
+(defvar webchat-server--push-client-connections nil)
+(defvar webchat-server--content-sender-process nil
+  "发送聊天内容的network process")
+(defun webchat-server--create-content-sender-process (port)
+  "创建用于发送聊天内容的network process"
+  (when webchat-server--content-sender-process
+	(delete-process webchat-server--content-sender-process))
+  (setq webchat-server--content-sender-process
+		(make-network-process :name "webchat-client-content"
+							  :family 'ipv4
+							  :server t
+							  :service port
+							  ;; :coding 'utf-8-dos
+							  :log (lambda (server connection msg)
+									 "将新建的链接,存入`webchat-server--push-client-connection'中"
+									 (message "log:%s,%s,%s" server connection msg)
+									 (add-to-list 'webchat-server--push-client-connections connection))
+							  :filter (lambda (connection msg)
+										"转发收到的聊天内容"
+										(mapc (lambda (conn)
+												(process-send-string conn msg))
+											  webchat-server--push-client-connections))
+							  :sentinel (lambda (proc event)
+										  "从`webchat-server--push-client-connection'中删除关闭的链接"
+										  (message "sentinel:%s" event)
+										  (when  (cl-some (lambda (reg)
+															(string-match-p reg event))
+														  '("finished" "exited" "connection broken"))
+											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections)))))))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
@@ -53,9 +71,8 @@
 	  (setq webchat-server--total-lines (1+ webchat-server--total-lines))
 	  (mapc (lambda (proc)
 			  (process-send-string proc (webchat-server--format-message who content)))
-			(hash-table-values webchat-server--push-client-connections-map))))
+			 webchat-server--push-client-connections)))
   (elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
-  ;; (elnode-http-start httpcon 302 '("Location" . "/"))
   (elnode-http-return httpcon))
 
 (defun webchat-server--upload-handler (httpcon)
@@ -72,7 +89,6 @@
 
 (defconst webchat-urls
   `(("^/$" . webchat-server--get-content-handler)
-	("^/register-as-push/.*$" . webchat-server--register-as-push-handler)
 	("^/upload/.*$" . webchat-server--upload-handler)
 	("^/upload-files/.*$" . webchat-server--upload-files-handler)
 	("^/update/.*$" . webchat-server--say-handler)))
@@ -83,6 +99,7 @@
 
 (defun webchat-server(port)
   (interactive `(,(read-number "请输入监听端口" 8000)))
+  (webchat-server--create-content-sender-process 9000)
   (elnode-start 'webchat-server--dispatcher-handler :port port))
 
 

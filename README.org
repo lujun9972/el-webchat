@@ -84,4 +84,5 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 + [X] 提供按钮,方便使用
   [[file:screen4.jpeg]]
 + [ ] server端需要清理无用的network process
++ [X] push方式也改为由client主动向server端发起连接
 + [ ] +改为不再基于elnode+

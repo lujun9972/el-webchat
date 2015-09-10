@@ -40,10 +40,6 @@
 			(when webchat-client-display-image
 			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
-(defun webchat-client--register-as-push-client (host port listener)
-  (let ((url (format "http://%s:%s/register-as-push/" host port)))
-	(url-http-post url `(("port" . ,listener)))))
-
 (defvar webchat-client--process nil)
 
 (defun webchat-talk (host port listener who)
@@ -81,11 +77,10 @@
 									  (forward-line)
 									  (let ((content (delete-and-extract-region (point) (point-max))))
 										(webchat-client--say host port who content))))
-  (webchat-client--register-as-push-client host port listener)
   (setq webchat-client--process
 		(make-network-process :name "webchat-client-content"
 							  :family 'ipv4
-							  :server t
+							  :server nil
 							  :service listener
 							  :buffer webchat-client-content-buffer
 							  :filter #'webchat-client--display-content))
