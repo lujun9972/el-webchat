@@ -6,6 +6,9 @@
 (require 'elnode)
 (require 'subr-x)
 (require 'cl)
+(add-to-list 'load-path default-directory)
+(require 'elnode-fix)
+
 (defvar webchat-server--total-lines 0
   "聊天室中总用有多少行内容")
 (defvar webchat-server-max-hold-lines 1000

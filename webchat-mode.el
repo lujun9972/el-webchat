@@ -1,4 +1,5 @@
 (require 'org)
+(require 'org-indent nil t)
 (unless (and (boundp 'package--initialized)
 			 package--initialized)
   (package-initialize))
