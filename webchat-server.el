@@ -58,12 +58,11 @@
 (defun webchat-server--upload-handler (httpcon)
   (let* ((upload-file (elnode-http-param httpcon "uploadfile"))
 		 (upload-file-name (get-text-property 0 :elnode-filename upload-file))
-		 (upload-file-path (format "upload-files/%s" (file-name-nondirectory  upload-file-name))))
+		 (upload-file-path (format "upload-files/%s.%s" (md5 upload-file) (file-name-extension  upload-file-name))))
 	(when (stringp upload-file)
 	  (with-temp-file upload-file-path
 		(insert (string-as-multibyte upload-file))))
 	(elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
-	;; (elnode-http-start httpcon 302 '("Location" . "/"))
 	(elnode-http-return httpcon upload-file-path)))
 
 (fset 'webchat-server--upload-files-handler (elnode-webserver-handler-maker default-directory)) ;此处doc-root貌似只能用default-directory不能用"./",不要问我为什么,我想静静......

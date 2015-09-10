@@ -74,10 +74,10 @@
   (set-process-coding-system webchat-client--process 'utf-8 'utf-8)
   (defun webchat-client-upload-file (file)
 	(interactive "f")
-	(let ((upload-url (format "http://%s:%s/upload/" host port)))
-	  (url-upload-file upload-url file)
+	(let* ((upload-url (format "http://%s:%s/upload/" host port))
+		   (upload-file-path (car  (url-upload-file upload-url file))))
 	  (with-current-buffer webchat-client-talk-buffer
-		(insert (format "[[http://%s:%s/upload-files/%s]]" host port (file-name-nondirectory file)))))))
+		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path))))))
 
 (defun webchat-quit ()
   (interactive)

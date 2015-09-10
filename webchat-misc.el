@@ -34,6 +34,7 @@
 	  t)))
 
 (defun url-upload-file (url file)
+  "upload `file' to `url'. return the responese"
   (let ((content-type (if (string-match-p (org-image-file-name-regexp) file)
 						  (format "image/%s" (file-name-extension file))
 						(format "multipart/mixed"))) 
