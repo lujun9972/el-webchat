@@ -5,29 +5,25 @@
 (add-to-list 'load-path default-directory)
 (require 'webchat-misc)
 (require 'webchat-mode)
-(defvar webchat-client--total-lines 0
-  "webchat客户端已经收到多少行聊天记录")
-(defun url-http-post (url args)
-  "Send ARGS to URL as a POST request."
-  (let ((url-request-method "POST")
-		(url-request-extra-headers
-		 '(("Content-Type" . "application/x-www-form-urlencoded")))
-		(url-request-data
-		 (mapconcat (lambda (arg)
-					  (concat (url-hexify-string (format "%s" (car arg)))
-							  "="
-							  (url-hexify-string (format "%s" (cdr arg)))))
-					args
-					"&")))
-	(url-retrieve url (lambda (status)
-						(kill-buffer (current-buffer))) nil t)))
 
 (defun webchat-client--say(host port who content)
   (let ((url (format "http://%s:%s/update/" host port)))
 	(url-http-post url `((who . ,who) (content . ,content)))))
 
-(defvar webchat-client-content-buffer "*webchat-content*"
-  "显示聊天内容的buffer")
+(defgroup webchat-client nil
+  "webchat客户端配置")
+
+(defcustom webchat-client-content-buffer "*webchat-content*"
+  "显示聊天内容的buffer name"
+  :type 'string)
+
+(defcustom webchat-client-talk-buffer "*webchat-talk*"
+  "输入聊天内容的buffer name"
+  :type 'string)
+
+(defcustom webchat-client-display-image t
+  "是否显示聊天内容中图片链接所指向的图片"
+  :type 'boolean)
 
 (defun webchat-client--display-content(proc content)
   "在buffer内显示聊天内容"
@@ -41,16 +37,15 @@
 		  (let ((inhibit-read-only t)
 				(pos (point-max)))
 			(insert content)
-			(webchat-display-inline-images-async nil t pos (point-max))))))))
-
-(defvar webchat-client-talk-buffer "*webchat-talk*"
-  "输入聊天内容的buffer")
+			(when webchat-client-display-image
+			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
 (defun webchat-client--register-as-push-client (host port listener)
   (let ((url (format "http://%s:%s/register-as-push/" host port)))
 	(url-http-post url `(("port" . ,listener)))))
 
 (defvar webchat-client--process nil)
+
 (defun webchat-talk (host port listener who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)

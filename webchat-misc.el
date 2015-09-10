@@ -43,4 +43,19 @@
 					 (buffer-string))))
 	(http-post-simple-multipart url nil `(("uploadfile" ,file ,content-type ,file-data)))))
 
+(defun url-http-post (url args)
+  "Send ARGS to URL as a POST request."
+  (let ((url-request-method "POST")
+		(url-request-extra-headers
+		 '(("Content-Type" . "application/x-www-form-urlencoded")))
+		(url-request-data
+		 (mapconcat (lambda (arg)
+					  (concat (url-hexify-string (format "%s" (car arg)))
+							  "="
+							  (url-hexify-string (format "%s" (cdr arg)))))
+					args
+					"&")))
+	(url-retrieve url (lambda (status)
+						(kill-buffer (current-buffer))) nil t)))
+
 (provide 'webchat-misc)

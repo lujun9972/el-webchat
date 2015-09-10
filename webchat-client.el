@@ -5,8 +5,25 @@
 (add-to-list 'load-path default-directory)
 (require 'webchat-misc)
 (require 'webchat-mode)
+
 (defvar webchat-client--total-lines 0
   "webchat客户端已经收到多少行聊天记录")
+
+(defgroup webchat-client nil
+  "webchat客户端配置")
+
+(defcustom webchat-client-content-buffer "*webchat-content*"
+  "显示聊天内容的buffer name"
+  :type 'string)
+
+(defcustom webchat-client-talk-buffer "*webchat-talk*"
+  "输入聊天内容的buffer name"
+  :type 'string)
+
+(defcustom webchat-client-display-image t
+  "是否显示聊天内容中图片链接所指向的图片"
+  :type 'boolean)
+
 (defun webchat-client--get-content(host port)
   (let ((buf (url-retrieve-synchronously (format "http://%s:%s/?start=%s" host port webchat-client--total-lines) t))
 		content)
@@ -20,20 +37,9 @@
 	(decode-coding-string (cdr content) 'utf-8-dos)))
 
 (defun webchat-client--say(host port who content)
-  (let ((url (format "http://%s:%s/update/"
-					 host
-					 port))
-		(url-request-method "POST")
-		(url-request-extra-headers
-		 '(("Content-Type" . "application/x-www-form-urlencoded")))
-		(url-request-data (format "who=%s&content=%s" (url-hexify-string who) (url-hexify-string content))))
-	(url-retrieve url
-				  (lambda (status)
-					(kill-buffer (current-buffer)))
-				  nil
-				  t)))
-(defvar webchat-client-content-buffer "*webchat-content*"
-  "显示聊天内容的buffer")
+  (let ((url (format "http://%s:%s/update/" host port)))
+	(url-http-post url `((who . ,who) (content . ,content)))))
+
 (defun webchat-client--display-content(host port)
   "在buffer内显示聊天内容"
   (let ((content (webchat-client--get-content host port))
@@ -47,7 +53,8 @@
 		  (let ((inhibit-read-only t)
 				(pos (point)))
 			(insert content)
-			(webchat-display-inline-images-async nil t pos (point-max))))))))
+			(when webchat-client-display-image
+			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
 
 (defun webchat-client--talk (host port who)
@@ -58,8 +65,7 @@
 	(erase-buffer)))
 
 (defvar webchat-client--timer nil)
-(defvar webchat-client-talk-buffer "*webchat-talk*"
-  "输入聊天内容的buffer")
+
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
