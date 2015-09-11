@@ -15,24 +15,29 @@
 ** 使用package安装htmlize
 * 单一聊天室的使用方法
 最简单的使用方式是启动一个webchat-server,让所有人都在同一个聊天室内交流. 
+
+
+目前webchat提供两种方式的实现,一种是客户端主动向server端拉取聊天内容的方式,实现文件为`webchat-server.el'与`webchat-client.el'
+
+还有一种实现是server端在有新的聊天内容时向client端推送聊天内容,实现文件为`webchat-server-push.el'与`webchat-client-push.el'
+
 ** 启动server端
 webchat-server.el为实现server端的代码,其支持以emacs script的方式直接调用. 方式为:
 #+BEGIN_SRC sh
-  # 給webchat-server.el添加执行权限
-  chmod +x webchat-server.el
-
   # 执行该文件,带一个端口参数,表示该服务监听哪个端口
-  webchat-server.el 8000
+  emacs --script webchat-server.el 8000
+  # 或
+  emacs --script webchat-server-push.el 8000
+#+END_SRC
 
-  # 若为windows环境,则可以执行以下命令
+若为windows环境,则可以执行以下命令
+#+BEGIN_SRC bat
   emacs.exe --script webchat-server.el 8000
+  rem 或
+  emacs.exe --script webchat-server-push.el 8000
 #+END_SRC
 
 ** 启动client端
-目前client端提供两种方式的实现,一种是客户端主动向server端拉取聊天内容的方式,实现文件为`webchat-talk.el'.
-
-还有一种实现是server端在有新的聊天内容时向client端推送聊天内容,实现文件为`webchat-talk-push.el'
-
 无论是哪种实现方式,启动client端的方式都是
 
 1. 加载client端实现文件
@@ -47,9 +52,11 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 * 多聊天室的使用方式
 在webchat-server之上,封装了一层webchat-server-dispatcher,使得交流着可以根据不同的主题进入不同的聊天室.
 ** 启动server端
-1. 加载webchat-server-dispatcher.el
+1. 加载webchat-server-dispatcher.el或webchat-server-dispatcher-push.el 
    #+BEGIN_SRC emacs-lisp
      (require 'webchat-server-dispatcher)
+     ; 或
+     (require 'webchat-server-dispatcher-push)
    #+END_SRC
 2. 调用命令M-x webchat-server-dispatcher,并输入监听端口
 ** 启动client端
