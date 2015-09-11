@@ -72,7 +72,7 @@
   (elnode-make-webserver default-directory webchat-server--http-port))
 
 
-(provide 'webchat-server)
+(provide 'webchat-server-push)
 
 ;; 以下操作是为了兼容#!emacs --script方式
 (when (member "-scriptload" command-line-args)
