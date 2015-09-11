@@ -1,6 +1,6 @@
 (add-to-list 'load-path default-directory)
 (require 'webchat-misc)
-(defvar webchat-server-topic-port-alist '(("cartoon" . 8001) ("emacs" . 8002))
+(defvar webchat-server-topic-port-alist '(("emacs" . 8002))
   "主题与端口的对应表")
 (defvar webchat-server-dispatcher-process nil)
 
@@ -38,15 +38,12 @@
 			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
 		(write-to-process process (apply cmd-fn data))))))
 
-(defun webchat-server-dispatch--get-next-service-port (base)
-  (while (local-port-used-p base)
-	(setq base (+ 1 base)))
-  base)
+
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
   (let ((port (cdr (assoc-string channel webchat-server-topic-port-alist)))
 		(max-service-port (apply #'max (mapcar #'cdr webchat-server-topic-port-alist))))
 	(unless port
-	  (setq port (webchat-server-dispatch--get-next-service-port (+ 1 max-service-port)))
+	  (setq port (next-unused-port (+ 1 max-service-port)))
 	  (webchat-server--build-service-process port)
 	  (while (not (local-port-used-p port))
 		(sit-for 1)))

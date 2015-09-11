@@ -6,6 +6,8 @@
 (require 'elnode)
 (require 'subr-x)
 (require 'cl)
+(add-to-list 'load-path default-directory)
+(require 'webchat-misc)
 
 (defvar webchat-server--push-client-connections nil)
 (defvar webchat-server--content-sender-process nil
@@ -15,11 +17,11 @@
   (when webchat-server--content-sender-process
 	(delete-process webchat-server--content-sender-process))
   (setq webchat-server--content-sender-process
-		(make-lispy-network-process :name "webchat-client-content"
+		(make-lispy-network-process :name "webchat-server-content"
 							  :family 'ipv4
 							  :server t
 							  :service port
-							  ;; :coding 'utf-8-dos
+							  ;; :coding 'raw-text
 							  :log (lambda (server connection msg)
 									 "将新建的链接,存入`webchat-server--push-client-connection'中"
 									 (message "log:%s,%s,%s" server connection msg)
@@ -52,22 +54,22 @@
   (let ((upload-file-path (format "upload-files/%s.%s" (md5 upload-file-data) (file-name-extension  upload-file-name))))
 	(when (stringp upload-file-data)
 	  (with-temp-file upload-file-path
-		(insert (string-as-multibyte upload-file-data))))
-	(lispy-process-send proc 'UPLOAD-RESPONSE upload-file-path)))
+		(insert  upload-file-data)))
+	(lispy-process-send proc 'UPLOAD-RESPONSE webchat-server--http-port upload-file-path)))
 
-(fset 'webchat-server--upload-files-handler (elnode-webserver-handler-maker default-directory)) ;此处doc-root貌似只能用default-directory不能用"./",不要问我为什么,我想静静......
+;; (defun webchat-server--REQUIRE-FILE (proc require-file-path start end)
+;;   (let ((file-data (with-temp-buffer
+;; 					 (insert-file-literally require-file-path)
+;; 					 (buffer-string))))
+;; 	(lispy-process-send proc 'REQUIRE-FILE-RESPONSE file-data start end)))
 
-(defconst webchat-urls
-  `(("^/upload-files/.*$" . webchat-server--upload-files-handler)))
-
-
-(defun webchat-server--dispatcher-handler (httpcon)
-  (elnode-dispatcher httpcon webchat-urls))
+(defvar webchat-server--http-port nil)
 
 (defun webchat-server(port)
   (interactive `(,(read-number "请输入监听端口" 8000)))
   (webchat-server--create-content-sender-process port)
-  (elnode-start 'webchat-server--dispatcher-handler :port port))
+  (setq webchat-server--http-port (next-unused-port (+ 1 port)))
+  (elnode-make-webserver default-directory webchat-server--http-port))
 
 
 (provide 'webchat-server)

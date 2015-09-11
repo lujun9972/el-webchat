@@ -6,9 +6,6 @@
 (require 'webchat-misc)
 (require 'webchat-mode)
 
-(defun webchat-client--say(host port who content)
-  (let ((url (format "http://%s:%s/update/" host port)))
-	(url-http-post url `((who . ,who) (content . ,content)))))
 
 (defgroup webchat-client nil
   "webchat客户端配置")
@@ -40,20 +37,18 @@
 			(when webchat-client-display-image
 			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
-(defun webchat-client--UPLOAD-RESPONSE (proc upload-file-path)
+(defun webchat-client--UPLOAD-RESPONSE (proc http-port upload-file-path)
   "在buffer中插入upload file url"
-  (let* ((host (process-contact proc :host))
-		 (port (process-contact proc :service)))
-	(with-current-buffer webchat-client-content
+  (let ((host (process-contact proc :host)))
+	(with-current-buffer webchat-client-talk-buffer
 	  (goto-char (point-max))
-	  (insert (format "%s:%/%" host port upload-file-path)))))
+	  (insert (format "[[http://%s:%s/%s]]" host http-port upload-file-path)))))
 
 (defvar webchat-client--process nil)
 
-(defun webchat-talk (host port listener who)
+(defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
-					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
 
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
@@ -61,8 +56,8 @@
 		(make-lispy-network-process :name "webchat-client-content"
 									:family 'ipv4
 									:host host
-									:service listener
-									;; :coding 'utf-8
+									:service port
+									;; :coding 'raw-text
 									;; :buffer webchat-client-content-buffer
 									:filter (lambda (proc &rest objs)
 											  (let* ((cmd (car objs))
@@ -76,6 +71,7 @@
 												   (file-data (with-temp-buffer
 																(insert-file-contents-literally file)
 																(buffer-string))))
+											  (message "md5:%s" (md5 file-data))
 											  (lispy-process-send webchat-client--process 'UPLOAD file file-data))))
 	(insert "\t")
 	(insert-function-button "toggle images" (lambda (btn)
@@ -98,10 +94,9 @@
   (kill-buffer-and-window))
 
 
-(defun webchat-client(host port listener who)
+(defun webchat-client(host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
-					 (read-number "请输入服务端口: " 8000)
-					 (read-number "请输入客户端的监听端口: " 9000)
+					 (read-number "请输入webchat服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
   (let* ((p1 (make-network-process :name "webchat-dispatcher"
 								   :buffer "*webchat-dispatcher*"
@@ -115,6 +110,6 @@
 	(with-current-buffer (process-buffer p1)
 	  (delete-process p1)
 	  (kill-buffer))
-	(webchat-talk host port listener who)))
+	(webchat-talk host port who)))
 
 (provide 'webchat-client)

@@ -33,6 +33,12 @@
 	  (delete-process p1)
 	  t)))
 
+(defun next-unused-port (base)
+  "返回>=`base'的未占用端口"
+  (while (local-port-used-p base)
+	(setq base (+ 1 base)))
+  base)
+
 (defun url-upload-file (url file)
   "upload `file' to `url'. return the responese"
   (let ((content-type (if (string-match-p (org-image-file-name-regexp) file)
