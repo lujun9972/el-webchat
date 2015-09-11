@@ -25,7 +25,7 @@
   "是否显示聊天内容中图片链接所指向的图片"
   :type 'boolean)
 
-(defun webchat-client--display-content(proc content)
+(defun webchat-client--SAY-RESPONSE (proc content)
   "在buffer内显示聊天内容"
   (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer))))
 	(save-selected-window
@@ -40,6 +40,14 @@
 			(when webchat-client-display-image
 			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
+(defun webchat-client--UPLOAD-RESPONSE (proc upload-file-path)
+  "在buffer中插入upload file url"
+  (let* ((host (process-contact proc :host))
+		 (port (process-contact proc :service)))
+	(with-current-buffer webchat-client-content
+	  (goto-char (point-max))
+	  (insert (format "%s:%/%" host port upload-file-path)))))
+
 (defvar webchat-client--process nil)
 
 (defun webchat-talk (host port listener who)
@@ -48,25 +56,30 @@
 					 (read-number "请输入客户端的监听端口: " 9000)
 					 (read-string "请输入你的名称: " user-login-name)))
 
-  (defun webchat-client-upload-file (&optional file)
-	(interactive)
-	(setq file (or file (read-file-name "upload file:")))
-	(let* ((upload-url (format "http://%s:%s/upload/" host port))
-		   (upload-file-path (car  (url-upload-file upload-url file))))
-	  (with-current-buffer webchat-client-talk-buffer
-		(goto-char (point-max))
-		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path)))))
-
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
+  (setq webchat-client--process
+		(make-lispy-network-process :name "webchat-client-content"
+									:family 'ipv4
+									:host host
+									:service listener
+									;; :coding 'utf-8
+									;; :buffer webchat-client-content-buffer
+									:filter (lambda (proc &rest objs)
+											  (let* ((cmd (car objs))
+											   (cmd-fn (intern (format "webchat-client--%s" cmd)))
+											   (args (cdr objs)))
+										  (apply cmd-fn proc args)))))
+
   (with-current-buffer webchat-client-talk-buffer
 	(insert-function-button "upload file" (lambda (btn)
-											(webchat-client-upload-file)))
+											(let* ((file (read-file-name "upload file:"))
+												   (file-data (with-temp-buffer
+																(insert-file-contents-literally file)
+																(buffer-string))))
+											  (lispy-process-send webchat-client--process 'UPLOAD file file-data))))
 	(insert "\t")
-	(insert-function-button "show images" (lambda (btn)
-											(setq webchat-client-display-image t)))
-	(insert "\t")
-	(insert-function-button "no images" (lambda (btn)
-											(setq webchat-client-display-image nil)))
+	(insert-function-button "toggle images" (lambda (btn)
+											  (setq webchat-client-display-image (not webchat-client-display-image))))
 
 	(newline)
 	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t)))
@@ -76,15 +89,7 @@
 									  (goto-char (point-min))
 									  (forward-line)
 									  (let ((content (delete-and-extract-region (point) (point-max))))
-										(webchat-client--say host port who content))))
-  (setq webchat-client--process
-		(make-network-process :name "webchat-client-content"
-							  :family 'ipv4
-							  :server nil
-							  :service listener
-							  :buffer webchat-client-content-buffer
-							  :filter #'webchat-client--display-content))
-  (set-process-coding-system webchat-client--process 'utf-8 'utf-8))
+										(lispy-process-send webchat-client--process 'SAY who content)))))
 
 (defun webchat-quit ()
   (interactive)
