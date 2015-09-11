@@ -109,4 +109,7 @@ filter function的函数签名应该为(process &rest objs)
   "插入名为`label'的按钮,当按下时会出发fn函数"
   (insert-button label 'follow-link t 'face 'mode-line-inactive 'action fn))
 
+(defun set-button-label (btn label)
+  ""
+  (replace-regexp ".+" label nil (button-start btn) (button-end btn)))
 (provide 'webchat-misc)

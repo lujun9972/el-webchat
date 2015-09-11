@@ -71,11 +71,17 @@
 												   (file-data (with-temp-buffer
 																(insert-file-contents-literally file)
 																(buffer-string))))
-											  (message "md5:%s" (md5 file-data))
 											  (lispy-process-send webchat-client--process 'UPLOAD file file-data))))
 	(insert "\t")
-	(insert-function-button "toggle images" (lambda (btn)
-											  (setq webchat-client-display-image (not webchat-client-display-image))))
+	(insert-function-button (if webchat-client-display-image
+								"no images"
+							  "display images")
+							(lambda (btn)
+							  (setq webchat-client-display-image (not webchat-client-display-image))
+							  (let ((inhibit-read-only t))
+								(if webchat-client-display-image
+									(set-button-label btn "no images")
+								  (set-button-label btn "display images")))))
 
 	(newline)
 	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t)))
