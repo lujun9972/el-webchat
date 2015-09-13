@@ -53,7 +53,7 @@
 (defun webchat-server--upload-handler (httpcon)
   (let* ((upload-file (elnode-http-param httpcon "uploadfile"))
 		 (upload-file-name (get-text-property 0 :elnode-filename upload-file))
-		 (upload-file-path (format "upload-files/%s.%s" (md5 upload-file) (file-name-extension  upload-file-name))))
+		 (upload-file-path (format "%s/upload-files/%s.%s" default-directory (md5 upload-file) (file-name-extension  upload-file-name))))
 	(when (stringp upload-file)
 	  (with-temp-file upload-file-path
 		(insert (string-as-multibyte upload-file))))

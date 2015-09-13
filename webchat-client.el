@@ -64,6 +64,9 @@
     (webchat-client--say host port who content)
 	(erase-buffer)))
 
+(defun webchat-client-toggle-image ()
+  (setq webchat-client-display-image (not webchat-client-display-image)))
+
 (defvar webchat-client--timer nil)
 
 (defun webchat-talk (host port who)
@@ -79,18 +82,6 @@
 		(goto-char (point-max))
 		(insert (format "[[http://%s:%s/%s]]" host port upload-file-path)))))
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
-  (with-current-buffer webchat-client-talk-buffer
-	(insert-function-button "upload file" (lambda (btn)
-											(webchat-client-upload-file)))
-	(insert "\t")
-	(insert-function-button "show images" (lambda (btn)
-											(setq webchat-client-display-image t)))
-	(insert "\t")
-	(insert-function-button "no images" (lambda (btn)
-											(setq webchat-client-display-image nil)))
-
-	(newline)
-	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t)))
   
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)

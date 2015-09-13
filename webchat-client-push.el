@@ -46,12 +46,21 @@
 
 (defvar webchat-client--process nil)
 
+(defun webchat-client-upload-file (&optional file)
+  (let* ((file (read-file-name "upload file:"))
+		 (file-data (with-temp-buffer
+					  (insert-file-contents-literally file)
+					  (buffer-string))))
+	(lispy-process-send webchat-client--process 'UPLOAD file file-data)))
+
+(defun webchat-client-toggle-image ()
+  (setq webchat-client-display-image (not webchat-client-display-image)))
+
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8000)
 					 (read-string "请输入你的名称: " user-login-name)))
 
-  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
   (setq webchat-client--process
 		(make-lispy-network-process :name "webchat-client-content"
 									:family 'ipv4
@@ -61,30 +70,12 @@
 									;; :buffer webchat-client-content-buffer
 									:filter (lambda (proc &rest objs)
 											  (let* ((cmd (car objs))
-											   (cmd-fn (intern (format "webchat-client--%s" cmd)))
-											   (args (cdr objs)))
-										  (apply cmd-fn proc args)))))
+													 (cmd-fn (intern (format "webchat-client--%s" cmd)))
+													 (args (cdr objs)))
+												(apply cmd-fn proc args)))))
 
-  (with-current-buffer webchat-client-talk-buffer
-	(insert-function-button "upload file" (lambda (btn)
-											(let* ((file (read-file-name "upload file:"))
-												   (file-data (with-temp-buffer
-																(insert-file-contents-literally file)
-																(buffer-string))))
-											  (lispy-process-send webchat-client--process 'UPLOAD file file-data))))
-	(insert "\t")
-	(insert-function-button (if webchat-client-display-image
-								"no images"
-							  "display images")
-							(lambda (btn)
-							  (setq webchat-client-display-image (not webchat-client-display-image))
-							  (let ((inhibit-read-only t))
-								(if webchat-client-display-image
-									(set-button-label btn "no images")
-								  (set-button-label btn "display images")))))
-
-	(newline)
-	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t)))
+  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
+  
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)
 									  "Function called when return is pressed in interactive mode to talk"

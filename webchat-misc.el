@@ -1,5 +1,6 @@
 (package-initialize)
 (require 'http-post-simple)
+(require 'cl)
 (defun read-from-process (process)
   "从process buffer中读取lisp object. 若成功则返回object,并将读取的内容从process buffer中移除,否则返回nil并保持process buffer内容不变"
   (let ((buf (process-buffer process))
@@ -63,6 +64,7 @@
 					"&")))
 	(url-retrieve url (lambda (status)
 						(kill-buffer (current-buffer))) nil t)))
+
 
 (defun make-lispy-network-process (&rest args)
   "类似`make-network-process'但使用lisp object作为传输对象

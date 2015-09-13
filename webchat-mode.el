@@ -23,7 +23,23 @@
   (read-only-mode)
   (select-window (split-window-below -6))
   (switch-to-buffer (get-buffer-create talk-buffer))
-  (webchat-mode))
+  (webchat-mode)
+  (with-current-buffer talk-buffer
+	(insert-function-button "upload file" (lambda (btn)
+											(webchat-client-upload-file)))
+	(insert "\t")
+	(insert-function-button (if webchat-client-display-image
+								"no images"
+							  "display images")
+							(lambda (btn)
+							  (let ((inhibit-read-only t))
+								(webchat-client-toggle-image)
+								(set-button-label btn (if webchat-client-display-image
+														  "no images"
+														"display images")))))
+
+	(newline)
+	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t))))
 
 (defun url-get-content-from-url(url)
   "获取 `url'的内容"
