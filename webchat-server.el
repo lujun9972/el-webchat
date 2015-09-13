@@ -53,9 +53,9 @@
 (defun webchat-server--upload-handler (httpcon)
   (let* ((upload-file (elnode-http-param httpcon "uploadfile"))
 		 (upload-file-name (get-text-property 0 :elnode-filename upload-file))
-		 (upload-file-path (format "%s/upload-files/%s.%s" default-directory (md5 upload-file) (file-name-extension  upload-file-name))))
+		 (upload-file-path (format "upload-files/%s.%s" (md5 upload-file) (file-name-extension  upload-file-name))))
 	(when (stringp upload-file)
-	  (with-temp-file upload-file-path
+	  (with-temp-file (format "%s/%s" default-directory upload-file-path)
 		(insert (string-as-multibyte upload-file))))
 	(elnode-http-start httpcon 200 '("Content-Type" . "text/plain"))
 	(elnode-http-return httpcon upload-file-path)))
@@ -134,10 +134,10 @@
 
 (defvar webchat-server--http-port nil)
 
-(defun webchat-server(port)
+(defun webchat-server(port &optional http-port)
   (interactive `(,(read-number "请输入监听端口" 8000)))
   (webchat-server--create-content-sender-process port)
-  (setq webchat-server--http-port (next-unused-port (+ 1 port)))
+  (setq webchat-server--http-port (or http-port (next-unused-port (+ 1 port))))
   (elnode-start 'webchat-server--dispatcher-handler :port webchat-server--http-port))
 
 
@@ -145,8 +145,10 @@
 
 ;; 以下操作是为了兼容#!emacs --script方式
 (when (member "-scriptload" command-line-args)
-  (let ((port (string-to-number (car command-line-args-left))))
-  (webchat-server port)
-  (while t
-	(sit-for 1))
-  (setq command-line-args-left nil)))
+  (let ((port (string-to-number (car command-line-args-left)))
+		(http-port (ignore-errors (string-to-number (cadr command-line-args-left)))))
+	(webchat-server port http-port)
+	(while t
+	  (sit-for 1))
+	(setq command-line-args-left nil)))
+

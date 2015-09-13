@@ -115,10 +115,9 @@
 		 (channel-list (read-from-process-wait p1))
 		 (channel (ido-completing-read "channel: " channel-list)))
 	(write-to-process p1 'REQUEST-CHANNEL-PORT channel)
-	(setq port (car (read-from-process-wait p1)))
+	(setq port (cadar (read-from-process-wait p1)))
 	(with-current-buffer (process-buffer p1)
 	  (delete-process p1)
 	  (kill-buffer))
 	(webchat-talk host port who)))
-
 (provide 'webchat-client)

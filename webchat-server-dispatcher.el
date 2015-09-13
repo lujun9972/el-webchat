@@ -1,13 +1,15 @@
 (add-to-list 'load-path default-directory)
 (require 'webchat-misc)
-(defvar webchat-server-topic-port-alist '(("emacs" . 8002))
+(defvar webchat-server-topic-port-alist '(("emacs"  8002 8003))
   "主题与端口的对应表")
 (defvar webchat-server-dispatcher-process nil)
 
-(defun webchat-server--build-service-process (port)
+(defun webchat-server--build-service-process (port http-port)
   "创建webchat-server进程"
   (let ((emacs-bin-path (concat invocation-directory invocation-name)))
-	(start-process "webchat-server" "webchat-server" emacs-bin-path "--script" "webchat-server.el" (number-to-string port))))
+	(if http-port
+		(start-process "webchat-server" "webchat-server" emacs-bin-path "--script" "webchat-server.el" (number-to-string port) (number-to-string http-port))
+	  (start-process "webchat-server" "webchat-server" emacs-bin-path "--script" "webchat-server.el" (number-to-string port)))))
 
 
 (defun webchat-server-dispatcher (port)
@@ -21,7 +23,9 @@
 							  :service port
 							  :log #'webchat-server-dispatch-topics
 							  :filter #'webchat-server-dispatch-response))
-  (mapcar #'webchat-server--build-service-process (mapcar #'cdr webchat-server-topic-port-alist)))
+  (mapcar (lambda (x)
+			(apply  #'webchat-server--build-service-process x))
+		  (mapcar #'cdr webchat-server-topic-port-alist)))
 
 (defun webchat-server-dispatch-topics (server connection msg)
   (set-process-buffer connection (get-buffer-create (process-name connection)))
@@ -40,15 +44,17 @@
 
 
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
-  (let ((port (cdr (assoc-string channel webchat-server-topic-port-alist)))
-		(max-service-port (apply #'max (mapcar #'cdr webchat-server-topic-port-alist))))
+  (let ((port (cadr (assoc-string channel webchat-server-topic-port-alist)))
+		(http-port (caddr (assoc-string channel webchat-server-topic-port-alist)))
+		(max-service-port (apply #'max (mapcar #'caddr webchat-server-topic-port-alist)))) ;暂时默认http-port一定会比port大
 	(unless port
 	  (setq port (next-unused-port (+ 1 max-service-port)))
-	  (webchat-server--build-service-process port)
-	  (while (not (local-port-used-p port))
-		(sit-for 1)))
-	(add-to-list 'webchat-server-topic-port-alist (cons channel port) t)
-	port))
+	  (setq http-port (next-unused-port (+ 1 port))))
+	(webchat-server--build-service-process port http-port)
+	(while (not (local-port-used-p port))
+	  (sit-for 1))
+	(add-to-list 'webchat-server-topic-port-alist (list channel port http-port) t)
+	(list  port http-port)))
 
 ;; 以下操作是为了兼容#!emacs --script方式
 (when (member "-scriptload" command-line-args)
