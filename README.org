@@ -5,9 +5,14 @@
 #+OPTIONS: ^:{}
 
 * el-webchat介绍
-这是一款基于elnode的简易聊天室实现. 
+这是一款简易聊天室实现. 
 
 [[file:screen-1.jpg]]
+
+目前提供了一个面向互联网的服务器. 该服务器使用多聊天室的使用方式:
++ IP: 106.185.33.31
++ PORT: 8000
+欢迎大家测试
 
 * Requirment
 ** 使用package安装simple-httpd
@@ -66,6 +71,7 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 * TODOS
 + [X] 可以在客户端自由添加channel
 + [X] 高亮代码
+  由于webchat-mode继承至org-mode,因此只需要将代码写入#+BEGIN_SRC ... #+END_SRC中即可实现高亮代码
   [[file:screen3.jpeg]]
 + [X] 显示图片
   [[file:screen2.jpeg]]
