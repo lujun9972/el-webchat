@@ -33,7 +33,7 @@
 		  (goto-char (point-max))
 		  (let ((inhibit-read-only t)
 				(pos (point-max)))
-			(insert content)
+			(insert (decode-coding-string  content 'utf-8))
 			(when webchat-client-display-image
 			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
@@ -81,7 +81,7 @@
 									  "Function called when return is pressed in interactive mode to talk"
 									  (goto-char (point-min))
 									  (forward-line)
-									  (let ((content (delete-and-extract-region (point) (point-max))))
+									  (let ((content (encode-coding-string  (delete-and-extract-region (point) (point-max)) 'utf-8)))
 										(lispy-process-send webchat-client--process 'SAY who content)))))
 
 (defun webchat-quit ()

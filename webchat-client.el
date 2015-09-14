@@ -52,7 +52,7 @@
 		  (goto-char (point-max))
 		  (let ((inhibit-read-only t)
 				(pos (point)))
-			(insert content)
+			(insert (decode-coding-string content 'utf-8))
 			(when webchat-client-display-image
 			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
 
@@ -88,7 +88,7 @@
 									  "Function called when return is pressed in interactive mode to talk"
 									  (goto-char (point-min))
 									  (forward-line)
-									  (let ((content (delete-and-extract-region (point) (point-max))))
+									  (let ((content (encode-coding-string  (delete-and-extract-region (point) (point-max)) 'utf-8)))
 										(webchat-client--say host port who content))))
   (setq webchat-client--timer (run-with-idle-timer 1 0.3 (lambda ()
    														   (webchat-client--display-content host port))))
