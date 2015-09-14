@@ -30,16 +30,8 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 #+END_SRC
 
 ** 启动client端
-目前webchat提供两种方式的实现,一种是客户端主动向server端拉取聊天内容的方式,实现文件为`webchat-client.el'
-
-还有一种实现是server端在有新的聊天内容时向client端推送聊天内容,实现文件为`webchat-client-push.el'
-
-无论是哪种实现方式,启动client端的方式都是
-
 1. 加载client端实现文件
    #+BEGIN_SRC emacs-lisp
-     (require 'webchat-client)
-     ;; 或
      (require 'webchat-client-push)
    #+END_SRC
 2. 调用命令 M-x webchat-talk
@@ -56,8 +48,6 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 ** 启动client端
 1. 加载client端实现文件
    #+BEGIN_SRC emacs-lisp
-     (require 'webchat-client)
-     ;; 或
      (require 'webchat-client-push)
    #+END_SRC
 2. 调用命令 M-x webchat-client. 在选择channel时可以输入一个不存在的channel,webchat-server-dispatcher会自动分配新服务进程为该channel提供服务.
