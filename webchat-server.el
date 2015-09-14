@@ -92,10 +92,11 @@
 									 (add-to-list 'webchat-server--push-client-connections connection))
 							  :filter (lambda (connection &rest objs)
 										"转发收到的聊天内容"
-										(let* ((cmd (car objs))
-											   (cmd-fn (intern (format "webchat-server--%s" cmd)))
-											   (args (cdr objs)))
-										  (apply cmd-fn connection args)))
+										(ignore-errors
+										  (let* ((cmd (car objs))
+												 (cmd-fn (intern (format "webchat-server--%s" cmd)))
+												 (args (cdr objs)))
+											(apply cmd-fn connection args))))
 							  :sentinel (lambda (proc event)
 										  "从`webchat-server--push-client-connection'中删除关闭的链接"
 										  (message "sentinel:%s" event)
