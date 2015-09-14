@@ -69,7 +69,7 @@
   (interactive `(,(read-number "请输入监听端口" 8000)))
   (webchat-server--create-content-sender-process port)
   (setq httpd-port (or http-port (next-unused-port (+ 1 port))))
-  (httpd-start))
+  (httpd-serve-directory default-directory))
 
 
 (provide 'webchat-server)

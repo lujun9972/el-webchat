@@ -10,7 +10,7 @@
 [[file:screen-1.jpg]]
 
 * Requirment
-** 使用package安装elnode
+** 使用package安装simple-httpd
 ** 使用package安装http-post-simple
 ** 使用package安装htmlize
 * 单一聊天室的使用方法
