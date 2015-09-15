@@ -16,7 +16,7 @@
 		(setq org-src-fontify-natively t))
 	(warn "无法加载htmlize,无法使用本地代码高亮")))
 
-(defun webchat-build-window (content-buffer talk-buffer)
+(defun webchat-build-window (content-buffer talk-buffer &rest button-defines)
   "构建webchat窗口模式"
   (switch-to-buffer (get-buffer-create content-buffer))
   (webchat-mode)
@@ -25,19 +25,11 @@
   (switch-to-buffer (get-buffer-create talk-buffer))
   (webchat-mode)
   (with-current-buffer talk-buffer
-	(insert-function-button "upload file" (lambda (btn)
-											(webchat-client-upload-file)))
-	(insert "\t")
-	(insert-function-button (if webchat-client-display-image
-								"no images"
-							  "display images")
-							(lambda (btn)
-							  (let ((inhibit-read-only t))
-								(webchat-client-toggle-image)
-								(set-button-label btn (if webchat-client-display-image
-														  "no images"
-														"display images")))))
-
+	(dolist (button-define button-defines)
+	  (let ((label (car button-define))
+			(fn (cadr button-define)))
+		(insert-function-button label fn)
+		(insert "\t")))
 	(newline)
 	(add-text-properties (point-min) (point) '(read-only t rear-nonsticky t))))
 

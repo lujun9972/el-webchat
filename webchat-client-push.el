@@ -47,7 +47,7 @@
 (defvar webchat-client--process nil)
 
 (defun webchat-client-upload-file (&optional file)
-  (let* ((file (read-file-name "upload file:"))
+  (let* ((file (or file (read-file-name "upload file:")))
 		 (file-data (with-temp-buffer
 					  (insert-file-contents-literally file)
 					  (buffer-string))))
@@ -80,7 +80,22 @@
 													 (args (cdr objs)))
 												(apply cmd-fn proc args)))))
 
-  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
+  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer
+						(list "上传文件"
+							  (lambda (btn)
+								(webchat-client-upload-file)))
+						(list (if webchat-client-display-image
+								  "不再显示图片"
+								"显示图片")
+							  (lambda (btn)
+								(let ((inhibit-read-only t))
+								  (webchat-client-toggle-image)
+								  (set-button-label btn (if webchat-client-display-image
+															"不再显示图片"
+														  "显示图片")))))
+						(list "截屏"
+							  (lambda (btn)
+								(webchat-client-screenshot-upload))))
   
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)
