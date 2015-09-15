@@ -22,6 +22,15 @@
   "是否显示聊天内容中图片链接所指向的图片"
   :type 'boolean)
 
+(defcustom webchat-client-notification-by-sound t
+  "收到消息时,是否发声通知"
+  :type 'boolean)
+
+(defcustom webchat-client-notification-sound-file nil
+  "收到消息时,通知的声音文件(wav,或au格式). 若为nil则直接调用beep函数通知"
+  :type '(choice (file :must-match t)
+				 (const nil)))
+
 (defun webchat-client--SAY-RESPONSE (proc content)
   "在buffer内显示聊天内容"
   (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer))))
@@ -35,7 +44,11 @@
 				(pos (point-max)))
 			(insert (decode-coding-string  content 'utf-8))
 			(when webchat-client-display-image
-			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
+			  (webchat-display-inline-images-async nil t pos (point-max)))
+			(when webchat-client-notification-by-sound
+			  (if webchat-client-notification-sound-file
+				  (play-sound-file webchat-client-notification-sound-file)
+				(ding 1)))))))))
 
 (defun webchat-client--UPLOAD-RESPONSE (proc http-port upload-file-path)
   "在buffer中插入upload file url"

@@ -69,6 +69,10 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 + `webchat-client-content-buffer'决定了显示聊天内容的那个buffer的名称
 
 + `webchat-client-talk-buffer'决定了输入聊天内容的那个buffer的名称
+
++ `webchat-client-notification-by-sound'决定了当有新消息时,是否用声音通知
+
++ `webchat-client-notification-sound-file'指定了收到消息时,通知的声音文件(wav,或au格式). 若为nil则直接调用beep函数通知
 * TODOS
 + [X] 可以在客户端自由添加channel
 + [X] 高亮代码
