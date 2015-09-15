@@ -1,28 +1,25 @@
 #!/bin/bash - 
-#===============================================================================
-#
-#          FILE: jp.sh
-# 
-#         USAGE: ./jp.sh 
-# 
-#   DESCRIPTION: 
-# 
-#       OPTIONS: ---
-#  REQUIREMENTS: ---
-#          BUGS: ---
-#         NOTES: ---
-#        AUTHOR: YOUR NAME (), 
-#  ORGANIZATION: 
-#       CREATED: 2015年09月06日 22时01分47秒 CST
-#      REVISION:  ---
-#===============================================================================
 
 set -o nounset                              # Treat unset variables as an error
 if [ $# -eq 0 ]
 then
-    filename=myscreen
+    filename=myscreen.png
 else
-    filename=$1
+    filename=$1.png
 fi
-xwd -frame |xwdtopnm|pnmtojpeg >$filename.jpeg
+
+function prog-exist-p 
+{
+    which $1;
+}
+
+if  prog-exist-p gnome-screenshot  
+then
+    echo "gnome-screenshot exist"
+    gnome-screenshot -a -f $filename
+elif prog-exist-p xwd
+then
+    echo "xwd exist"
+    xwd -frame |xwdtopnm|pnmtopng >$filename
+fi
 

@@ -53,6 +53,12 @@
 					  (buffer-string))))
 	(lispy-process-send webchat-client--process 'UPLOAD file file-data)))
 
+(defun webchat-client-screenshot-upload (&optional file)
+  "`file'为截屏产生的临时文件名称(不带后缀名,因为后缀只能为png格式的文件). 默认为myscreen"
+  (setq file (or file "myscreen"))
+  (call-process "jp.sh" nil nil nil file)
+  (webchat-client-upload-file (format "%s.png" file)))
+
 (defun webchat-client-toggle-image ()
   (setq webchat-client-display-image (not webchat-client-display-image)))
 
