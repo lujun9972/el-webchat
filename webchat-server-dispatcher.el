@@ -17,7 +17,7 @@
   (when webchat-server-dispatcher-process
 	(delete-process webchat-server-dispatcher-process))
   (setq webchat-server-dispatcher-process
-		(make-network-process :name "webchat-server-dispatcher"
+		(make-lispy-network-process :name "webchat-server-dispatcher"
 							  :family 'ipv4
 							  :server t
 							  :service port
@@ -31,16 +31,12 @@
   (set-process-buffer connection (get-buffer-create (process-name connection)))
   (process-send-string connection (prin1-to-string (mapcar #'car webchat-server-topic-port-alist))))
 
-(defun webchat-server-dispatch-response (process msg)
-  (with-current-buffer (process-buffer process)
-	(goto-char (point-max))
-	(insert msg))
-  (let ((request (read-from-process process)))
-	(when request
-	  (let* ((cmd (car request))
-			 (data (cdr request))
-			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
-		(write-to-process process (apply cmd-fn data))))))
+(defun webchat-server-dispatch-response (process &rest request)
+  (when request
+	(let* ((cmd (car request))
+		   (data (cdr request))
+		   (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
+	  (lispy-process-send process (apply cmd-fn data)))))
 
 
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
