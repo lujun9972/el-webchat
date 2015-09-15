@@ -1,5 +1,4 @@
 (package-initialize)
-(require 'http-post-simple)
 (require 'cl)
 (defun read-from-process (process)
   "从process buffer中读取lisp object. 若成功则返回object,并将读取的内容从process buffer中移除,否则返回nil并保持process buffer内容不变"
@@ -39,32 +38,6 @@
   (while (local-port-used-p base)
 	(setq base (+ 1 base)))
   base)
-
-(defun url-upload-file (url file)
-  "upload `file' to `url'. return the responese"
-  (let ((content-type (if (string-match-p (org-image-file-name-regexp) file)
-						  (format "image/%s" (file-name-extension file))
-						(format "multipart/mixed"))) 
-		(file-data (with-temp-buffer
-					 (insert-file-contents-literally file)
-					 (buffer-string))))
-	(http-post-simple-multipart url nil `(("uploadfile" ,file ,content-type ,file-data)))))
-
-(defun url-http-post (url args)
-  "Send ARGS to URL as a POST request."
-  (let ((url-request-method "POST")
-		(url-request-extra-headers
-		 '(("Content-Type" . "application/x-www-form-urlencoded")))
-		(url-request-data
-		 (mapconcat (lambda (arg)
-					  (concat (url-hexify-string (format "%s" (car arg)))
-							  "="
-							  (url-hexify-string (format "%s" (cdr arg)))))
-					args
-					"&")))
-	(url-retrieve url (lambda (status)
-						(kill-buffer (current-buffer))) nil t)))
-
 
 (defun make-lispy-network-process (&rest args)
   "类似`make-network-process'但使用lisp object作为传输对象
