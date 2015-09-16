@@ -93,7 +93,7 @@
 
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
-					 (read-number "请输入服务端口: " 8000)
+					 (read-number "请输入服务端口: " 8002)
 					 (read-string "请输入你的名称: " user-login-name)))
 
   (setq webchat-client--process
