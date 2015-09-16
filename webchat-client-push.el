@@ -86,7 +86,9 @@
 (defun webchat-client-screenshot-upload (&optional file)
   "`file'为截屏产生的临时文件名称(不带后缀名,因为后缀只能为png格式的文件). 默认为myscreen"
   (setq file (or file "myscreen"))
-  (call-process (format "%sjp.sh" default-directory) nil nil nil file)
+  (cond ((eq system-type 'gnu/linux)
+		 (call-process (format "%sjp.sh" default-directory) nil nil nil file))
+		(t (error "不知道如何截屏")))
   (webchat-client-upload-file (format "%s.png" file)))
 
 (defun webchat-client-toggle-image ()
