@@ -33,7 +33,8 @@
 (when (featurep 'dbusbind)
   (require 'notifications)
   (defcustom webchat-client-desktop-notification t
-	"收到消息时,是否使用desktop-notification通知")
+	"收到消息时,是否使用desktop-notification通知"
+	:type 'boolean)
   (defvar webchat-client-last-desktop-notification-id nil
 	"上一次通知的notification id"))
 
@@ -124,7 +125,10 @@
 														  "显示图片")))))
 						(list "截屏"
 							  (lambda (btn)
-								(webchat-client-screenshot-upload))))
+								(webchat-client-screenshot-upload)))
+						(list "配置"
+							  (lambda (btn)
+								(customize-group 'webchat-client))))
   
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)
