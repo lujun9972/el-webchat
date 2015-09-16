@@ -34,6 +34,7 @@
 (defun webchat-server-dispatch-response (process &rest request)
   (ignore-errors
 	(when request
+	  (message "DEBUG: get request[%s]" request)
 	  (let* ((cmd (car request))
 			 (data (cdr request))
 			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
