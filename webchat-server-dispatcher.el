@@ -32,11 +32,12 @@
   (process-send-string connection (prin1-to-string (mapcar #'car webchat-server-topic-port-alist))))
 
 (defun webchat-server-dispatch-response (process &rest request)
-  (when request
-	(let* ((cmd (car request))
-		   (data (cdr request))
-		   (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
-	  (lispy-process-send process (apply cmd-fn data)))))
+  (ignore-errors
+	(when request
+	  (let* ((cmd (car request))
+			 (data (cdr request))
+			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
+		(lispy-process-send process (apply cmd-fn data))))))
 
 
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)
