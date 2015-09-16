@@ -74,18 +74,24 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 + `webchat-client-notification-by-sound'决定了当有新消息时,是否用声音通知
 
 + `webchat-client-notification-sound-file'指定了收到消息时,通知的声音文件(wav,或au格式). 若为nil则直接调用beep函数通知
-* TODOS
+
++ `webchat-client-desktop-notification'指定了收到消息时,是否使用桌面通知功能.
+* Features
 + [X] 可以在客户端自由添加channel
+
 + [X] 高亮代码
+
   由于webchat-mode继承至org-mode,因此只需要将代码写入#+BEGIN_SRC ... #+END_SRC中即可实现高亮代码
   [[file:screen3.jpeg]]
 + [X] 显示图片
+  
+  webchat能够显示http url所指定的图片.
   [[file:screen2.jpeg]]
 + [X] 提供方法上传图片
-+ [X] 保存上传文件时,文件名基于内容签名重命名
-+ [X] 提供选项由用户自己决定是否显示http url图片
-+ [X] 提供按钮,方便使用
+  
+  webchat提供了方法上传本地图片到服务器上,并会将服务器上图片的网址插入到聊天窗口中.
   [[file:screen4.jpeg]]
-+ [X] server端需要清理无用的network process
-+ [X] push方式也改为由client主动向server端发起连接
-+ [ ] +改为不再基于elnode+
++ 当收到消息时,可以设置声音提醒
++ 当收到消息时,若支持dbus,则可以启用桌面提醒功能
+
+  [[file:desktop-notification.png]]
