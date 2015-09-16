@@ -6,7 +6,6 @@
 (require 'webchat-misc)
 (require 'webchat-mode)
 
-
 (defgroup webchat-client nil
   "webchat客户端配置")
 
@@ -31,9 +30,20 @@
   :type '(choice (file :must-match t)
 				 (const nil)))
 
+(when (featurep 'dbusbind)
+  (require 'notifications)
+  (defcustom webchat-client-desktop-notification t
+	"收到消息时,是否使用desktop-notification通知")
+  (defvar webchat-client-last-desktop-notification-id nil
+	"上一次通知的notification id"))
+
 (defun webchat-client--SAY-RESPONSE (proc content)
   "在buffer内显示聊天内容"
-  (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer))))
+  (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer)))
+		title body)
+	(string-match "\\(^[^\r\n]+\\)[\r\n]\\(.+\\)$" content)
+	(setq title (match-string 1 content))
+	(setq body (match-string 2 content))
 	(save-selected-window
 	  (save-excursion 
 		(when webchat-client-content-window
@@ -48,7 +58,13 @@
 			(when webchat-client-notification-by-sound
 			  (if webchat-client-notification-sound-file
 				  (play-sound-file webchat-client-notification-sound-file)
-				(ding 1)))))))))
+				(ding 1)))
+			(when (and (boundp 'webchat-client-desktop-notification)
+					   webchat-client-desktop-notification)
+			  (setq webchat-client-last-desktop-notification-id
+					(notifications-notify :title title
+										  :body body
+										  :replaces-id webchat-client-last-desktop-notification-id)))))))))
 
 (defun webchat-client--UPLOAD-RESPONSE (proc http-port upload-file-path)
   "在buffer中插入upload file url"
