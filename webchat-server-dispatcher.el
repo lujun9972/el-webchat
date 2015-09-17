@@ -34,10 +34,13 @@
 (defun webchat-server-dispatch-response (process &rest request)
   (ignore-errors
 	(when request
+	  (message "DEBUG: get request[%s]" request)
 	  (let* ((cmd (car request))
 			 (data (cdr request))
 			 (cmd-fn (intern (format "webchat-server-dispatch-%s" cmd))))
-		(lispy-process-send process (apply cmd-fn data))))))
+		(if (functionp cmd-fn)
+			(lispy-process-send process (apply cmd-fn data))
+		  (delete-process process))))))
 
 
 (defun webchat-server-dispatch-REQUEST-CHANNEL-PORT (channel)

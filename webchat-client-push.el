@@ -6,7 +6,6 @@
 (require 'webchat-misc)
 (require 'webchat-mode)
 
-
 (defgroup webchat-client nil
   "webchat客户端配置")
 
@@ -22,9 +21,30 @@
   "是否显示聊天内容中图片链接所指向的图片"
   :type 'boolean)
 
+(defcustom webchat-client-notification-by-sound t
+  "收到消息时,是否发声通知"
+  :type 'boolean)
+
+(defcustom webchat-client-notification-sound-file nil
+  "收到消息时,通知的声音文件(wav,或au格式). 若为nil则直接调用beep函数通知"
+  :type '(choice (file :must-match t)
+				 (const nil)))
+
+(when (featurep 'dbusbind)
+  (require 'notifications)
+  (defcustom webchat-client-desktop-notification t
+	"收到消息时,是否使用desktop-notification通知"
+	:type 'boolean)
+  (defvar webchat-client-last-desktop-notification-id nil
+	"上一次通知的notification id"))
+
 (defun webchat-client--SAY-RESPONSE (proc content)
   "在buffer内显示聊天内容"
-  (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer))))
+  (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer)))
+		title body)
+	(string-match "\\(^[^\r\n]+\\)[\r\n]\\(.+\\)$" content)
+	(setq title (match-string 1 content))
+	(setq body (match-string 2 content))
 	(save-selected-window
 	  (save-excursion 
 		(when webchat-client-content-window
@@ -35,7 +55,17 @@
 				(pos (point-max)))
 			(insert (decode-coding-string  content 'utf-8))
 			(when webchat-client-display-image
-			  (webchat-display-inline-images-async nil t pos (point-max)))))))))
+			  (webchat-display-inline-images-async nil t pos (point-max)))
+			(when webchat-client-notification-by-sound
+			  (if webchat-client-notification-sound-file
+				  (play-sound-file webchat-client-notification-sound-file)
+				(ding 1)))
+			(when (and (boundp 'webchat-client-desktop-notification)
+					   webchat-client-desktop-notification)
+			  (setq webchat-client-last-desktop-notification-id
+					(notifications-notify :title title
+										  :body body
+										  :replaces-id webchat-client-last-desktop-notification-id)))))))))
 
 (defun webchat-client--UPLOAD-RESPONSE (proc http-port upload-file-path)
   "在buffer中插入upload file url"
@@ -47,18 +77,26 @@
 (defvar webchat-client--process nil)
 
 (defun webchat-client-upload-file (&optional file)
-  (let* ((file (read-file-name "upload file:"))
+  (let* ((file (or file (read-file-name "upload file:")))
 		 (file-data (with-temp-buffer
 					  (insert-file-contents-literally file)
 					  (buffer-string))))
 	(lispy-process-send webchat-client--process 'UPLOAD file file-data)))
+
+(defun webchat-client-screenshot-upload (&optional file)
+  "`file'为截屏产生的临时文件名称(不带后缀名,因为后缀只能为png格式的文件). 默认为myscreen"
+  (setq file (or file "myscreen"))
+  (cond ((eq system-type 'gnu/linux)
+		 (call-process (format "%sjp.sh" default-directory) nil nil nil file))
+		(t (error "不知道如何截屏")))
+  (webchat-client-upload-file (format "%s.png" file)))
 
 (defun webchat-client-toggle-image ()
   (setq webchat-client-display-image (not webchat-client-display-image)))
 
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
-					 (read-number "请输入服务端口: " 8000)
+					 (read-number "请输入服务端口: " 8002)
 					 (read-string "请输入你的名称: " user-login-name)))
 
   (setq webchat-client--process
@@ -74,7 +112,25 @@
 													 (args (cdr objs)))
 												(apply cmd-fn proc args)))))
 
-  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer)
+  (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer
+						(list "上传文件"
+							  (lambda (btn)
+								(webchat-client-upload-file)))
+						(list (if webchat-client-display-image
+								  "不再显示图片"
+								"显示图片")
+							  (lambda (btn)
+								(let ((inhibit-read-only t))
+								  (webchat-client-toggle-image)
+								  (set-button-label btn (if webchat-client-display-image
+															"不再显示图片"
+														  "显示图片")))))
+						(list "截屏"
+							  (lambda (btn)
+								(webchat-client-screenshot-upload)))
+						(list "配置"
+							  (lambda (btn)
+								(customize-group 'webchat-client))))
   
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)

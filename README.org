@@ -11,13 +11,15 @@
 
 目前提供了一个面向互联网的服务器. 该服务器使用多聊天室的使用方式:
 + IP: 106.185.33.31
-+ PORT: 8000
++ PORT: 8000 (多聊天室方式入口)
++ PORT: 8002 (单聊天室方式入口)
 欢迎大家测试
 
 * Requirment
-** 使用package安装simple-httpd
-** 使用package安装http-post-simple
-** 使用package安装htmlize
+** 服务端
++ 使用package安装simple-httpd
+** 客户端
++ 使用package安装htmlize
 * 单一聊天室的使用方法
 最简单的使用方式是启动一个webchat-server,让所有人都在同一个聊天室内交流. 
 
@@ -68,18 +70,28 @@ webchat-server.el为实现server端的代码,其支持以emacs script的方式�
 + `webchat-client-content-buffer'决定了显示聊天内容的那个buffer的名称
 
 + `webchat-client-talk-buffer'决定了输入聊天内容的那个buffer的名称
-* TODOS
+
++ `webchat-client-notification-by-sound'决定了当有新消息时,是否用声音通知
+
++ `webchat-client-notification-sound-file'指定了收到消息时,通知的声音文件(wav,或au格式). 若为nil则直接调用beep函数通知
+
++ `webchat-client-desktop-notification'指定了收到消息时,是否使用桌面通知功能.
+* Features
 + [X] 可以在客户端自由添加channel
+
 + [X] 高亮代码
+
   由于webchat-mode继承至org-mode,因此只需要将代码写入#+BEGIN_SRC ... #+END_SRC中即可实现高亮代码
   [[file:screen3.jpeg]]
 + [X] 显示图片
+  
+  webchat能够显示http url所指定的图片.
   [[file:screen2.jpeg]]
 + [X] 提供方法上传图片
-+ [X] 保存上传文件时,文件名基于内容签名重命名
-+ [X] 提供选项由用户自己决定是否显示http url图片
-+ [X] 提供按钮,方便使用
+  
+  webchat提供了方法上传本地图片到服务器上,并会将服务器上图片的网址插入到聊天窗口中.
   [[file:screen4.jpeg]]
-+ [X] server端需要清理无用的network process
-+ [X] push方式也改为由client主动向server端发起连接
-+ [ ] +改为不再基于elnode+
++ 当收到消息时,可以设置声音提醒
++ 当收到消息时,若支持dbus,则可以启用桌面提醒功能
+
+  [[file:desktop-notification.png]]
