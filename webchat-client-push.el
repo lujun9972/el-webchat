@@ -104,7 +104,7 @@
 									:family 'ipv4
 									:host host
 									:service port
-									;; :coding 'raw-text
+									:coding 'raw-text
 									;; :buffer webchat-client-content-buffer
 									:filter (lambda (proc &rest objs)
 											  (let* ((cmd (car objs))
@@ -131,14 +131,16 @@
 						(list "配置"
 							  (lambda (btn)
 								(customize-group 'webchat-client))))
-  
+
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)
 									  "Function called when return is pressed in interactive mode to talk"
 									  (goto-char (point-min))
 									  (forward-line)
 									  (let ((content (encode-coding-string  (delete-and-extract-region (point) (point-max)) 'utf-8)))
-										(lispy-process-send webchat-client--process 'SAY who content)))))
+										(lispy-process-send webchat-client--process 'SAY content))))
+  
+  (lispy-process-send webchat-client--process 'REGIST who))
 
 (defun webchat-quit ()
   (interactive)

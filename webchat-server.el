@@ -21,7 +21,7 @@
 							  :family 'ipv4
 							  :server t
 							  :service port
-							  ;; :coding 'raw-text
+							  :coding 'raw-text
 							  :log (lambda (server connection msg)
 									 "将新建的链接,存入`webchat-server--push-client-connection'中"
 									 (message "log:%s,%s,%s" server connection msg)
@@ -40,13 +40,22 @@
 															(string-match-p reg event))
 														  '("finished" "exited" "connection broken"))
 											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections))
+											(webchat-server--SAY-internal "系统消息:" (format "%s离开了聊天室" (process-get proc 'who)))
 											(delete-process proc))))))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
   (format "* %s-<%s>:\n%s\n" who (current-time-string)  content))
 
-(defun webchat-server--SAY (proc who content)
+(defun webchat-server--REGIST (proc who)
+  (process-put process 'who (format "%s@%s" who (process-contact proc :host)))
+  (webchat-server--SAY-internal "系统消息:" (format "%s加入了聊天室" (process-get proc 'who))))
+
+(defun webchat-server--SAY (proc content)
+  (let ((who (process-get process 'who)))
+	(webchat-server--SAY-internal who content)))
+
+(defun webchat-server--SAY-internal (who content)
   (mapc (lambda (proc)
 		  (lispy-process-send proc 'SAY-RESPONSE (webchat-server--format-message who content)))
 		webchat-server--push-client-connections))
@@ -57,6 +66,11 @@
 	  (with-temp-file upload-file-path
 		(insert  upload-file-data)))
 	(lispy-process-send proc 'UPLOAD-RESPONSE httpd-port upload-file-path)))
+
+(defun webchat-server--REQUEST-USER-LIST (proc)
+  (let ((user-list (mapcar (lambda (proc)
+							 (process-get proc 'who)) webchat-server--push-client-connections)))
+	(lispy-process-send proc 'REQUEST-USER-LIST-RESPONSE user-list)))
 
 ;; (defun webchat-server--REQUIRE-FILE (proc require-file-path start end)
 ;;   (let ((file-data (with-temp-buffer
