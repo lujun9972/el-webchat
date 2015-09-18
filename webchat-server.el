@@ -40,16 +40,19 @@
 															(string-match-p reg event))
 														  '("finished" "exited" "connection broken"))
 											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections))
-											(webchat-server--SAY-internal "系统消息:" (format "%s离开了聊天室" (process-get proc 'who)))
+											(webchat-server--SAY-internal webchat-server--who (format (encode-coding-string  "%s离开了聊天室" 'utf-8) (process-get proc 'who)))
 											(delete-process proc))))))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
   (format "* %s-<%s>:\n%s\n" who (current-time-string)  content))
 
+(defvar webchat-server--who (encode-coding-string "系统消息:" 'utf-8)
+  "服务端系统消息机器人名称")
+
 (defun webchat-server--REGIST (proc who)
   (process-put process 'who (format "%s@%s" who (process-contact proc :host)))
-  (webchat-server--SAY-internal "系统消息:" (format "%s加入了聊天室" (process-get proc 'who))))
+  (webchat-server--SAY-internal webchat-server--who (format (encode-coding-string "%s加入了聊天室" 'utf-8) (process-get proc 'who))))
 
 (defun webchat-server--SAY (proc content)
   (let ((who (process-get process 'who)))
@@ -80,7 +83,7 @@
 
 
 (defun webchat-server(port &optional http-port)
-  (interactive `(,(read-number "请输入监听端口" 8000)))
+  (interactive `(,(read-number "请输入监听端口" 8002)))
   (webchat-server--create-content-sender-process port)
   (setq httpd-port (or http-port (next-unused-port (+ 1 port))))
   (httpd-serve-directory default-directory))

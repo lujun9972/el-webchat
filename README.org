@@ -20,6 +20,7 @@
 + 使用package安装simple-httpd
 ** 客户端
 + 使用package安装htmlize
++ 使用package安装popup
 * 单一聊天室的使用方法
 最简单的使用方式是启动一个webchat-server,让所有人都在同一个聊天室内交流. 
 

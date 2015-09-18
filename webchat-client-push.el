@@ -5,6 +5,7 @@
 (add-to-list 'load-path default-directory)
 (require 'webchat-misc)
 (require 'webchat-mode)
+(require 'popup)
 
 (defgroup webchat-client nil
   "webchat客户端配置")
@@ -74,6 +75,11 @@
 	  (goto-char (point-max))
 	  (insert (format "[[http://%s:%s/%s]]" host http-port upload-file-path)))))
 
+(defun webchat-client--REQUEST-USER-LIST-RESPONSE (proc user-list)
+  ""
+  (with-current-buffer webchat-client-talk-buffer
+	(insert (popup-menu* user-list))))
+
 (defvar webchat-client--process nil)
 
 (defun webchat-client-upload-file (&optional file)
@@ -94,10 +100,17 @@
 (defun webchat-client-toggle-image ()
   (setq webchat-client-display-image (not webchat-client-display-image)))
 
+(defun webchat-client-popup-user-list ()
+  "从服务端获取在线的用户列表"
+  (process-put webchat-client--process 'WAIT 'REQUEST-USER-LIST-RESPONSE)
+  (lispy-process-send webchat-client--process 'REQUEST-USER-LIST)
+  (while (process-get webchat-client--process 'WAIT)
+	(accept-process-output webchat-client--process 0.1)))
+
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入服务端口: " 8002)
-					 (read-string "请输入你的名称: " user-login-name)))
+					 (encode-coding-string  (read-string "请输入你的名称: " user-login-name) 'utf-8)))
 
   (setq webchat-client--process
 		(make-lispy-network-process :name "webchat-client-content"
@@ -110,6 +123,8 @@
 											  (let* ((cmd (car objs))
 													 (cmd-fn (intern (format "webchat-client--%s" cmd)))
 													 (args (cdr objs)))
+												(when (eq (process-get proc 'WAIT) cmd)
+												  (process-put proc 'WAIT nil))
 												(apply cmd-fn proc args)))))
 
   (webchat-build-window webchat-client-content-buffer webchat-client-talk-buffer
@@ -134,11 +149,16 @@
 
   (local-set-key (kbd "<C-return>") (lambda ()
 									  (interactive)
-									  "Function called when return is pressed in interactive mode to talk"
+									  "Function called when C-return is pressed in interactive mode to talk"
 									  (goto-char (point-min))
 									  (forward-line)
 									  (let ((content (encode-coding-string  (delete-and-extract-region (point) (point-max)) 'utf-8)))
 										(lispy-process-send webchat-client--process 'SAY content))))
+  (local-set-key (kbd "@") (lambda ()
+							 (interactive)
+							 "Function called when @ is pressed in interactive mode to talk"
+							 (insert "@")
+							 (webchat-client-popup-user-list)))
   
   (lispy-process-send webchat-client--process 'REGIST who))
 
@@ -146,6 +166,8 @@
   (interactive)
   (delete-process webchat-client--process)
   (select-window (get-buffer-window webchat-client-content-buffer))
+  (kill-buffer-and-window)
+  (select-window (get-buffer-window webchat-client-talk-buffer))
   (kill-buffer-and-window))
 
 
