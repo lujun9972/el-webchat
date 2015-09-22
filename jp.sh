@@ -12,8 +12,11 @@ function prog-exist-p
 {
     which $1;
 }
-
-if  prog-exist-p gnome-screenshot  
+if prog-exist-p scrot
+then
+    echo "scrot exist"
+    scrot -s $filename
+elif  prog-exist-p gnome-screenshot  
 then
     echo "gnome-screenshot exist"
     gnome-screenshot -a -f $filename
