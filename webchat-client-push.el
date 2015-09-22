@@ -72,13 +72,13 @@
   "在buffer中插入upload file url"
   (let ((host (process-contact proc :host)))
 	(with-current-buffer webchat-client-talk-buffer
-	  (goto-char (point-max))
 	  (insert (format "[[http://%s:%s/%s]]" host http-port upload-file-path)))))
 
-(defun webchat-client--REQUEST-USER-LIST-RESPONSE (proc user-list)
+(defvar webchat-client--user-list nil
+  "聊天室中的用户列表")
+(defun webchat-client--SYNC-USER-LIST (proc user-list)
   ""
-  (with-current-buffer webchat-client-talk-buffer
-	(insert (popup-menu* user-list))))
+  (setq webchat-client--user-list user-list))
 
 (defvar webchat-client--process nil)
 
@@ -87,7 +87,8 @@
 		 (file-data (with-temp-buffer
 					  (insert-file-contents-literally file)
 					  (buffer-string))))
-	(lispy-process-send webchat-client--process 'UPLOAD file file-data)))
+	(lispy-process-send-wait webchat-client--process 'UPLOAD file file-data)))
+
 
 (defun webchat-client-screenshot-upload (&optional file)
   "`file'为截屏产生的临时文件名称(不带后缀名,因为后缀只能为png格式的文件). 默认为myscreen"
@@ -99,13 +100,6 @@
 
 (defun webchat-client-toggle-image ()
   (setq webchat-client-display-image (not webchat-client-display-image)))
-
-(defun webchat-client-popup-user-list ()
-  "从服务端获取在线的用户列表"
-  (process-put webchat-client--process 'WAIT 'REQUEST-USER-LIST-RESPONSE)
-  (lispy-process-send webchat-client--process 'REQUEST-USER-LIST)
-  (while (process-get webchat-client--process 'WAIT)
-	(accept-process-output webchat-client--process 0.1)))
 
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
@@ -157,8 +151,7 @@
   (local-set-key (kbd "@") (lambda ()
 							 (interactive)
 							 "Function called when @ is pressed in interactive mode to talk"
-							 (insert "@")
-							 (webchat-client-popup-user-list)))
+							 (insert "@" (popup-menu* webchat-client--user-list))))
   
   (lispy-process-send webchat-client--process 'REGIST who))
 
@@ -174,7 +167,7 @@
 (defun webchat-client(host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
 					 (read-number "请输入webchat服务端口: " 8000)
-					 (read-string "请输入你的名称: " user-login-name)))
+					 (encode-coding-string  (read-string "请输入你的名称: " user-login-name) 'utf-8)))
   (let* ((p1 (make-network-process :name "webchat-dispatcher"
 								   :buffer "*webchat-dispatcher*"
 								   :family 'ipv4

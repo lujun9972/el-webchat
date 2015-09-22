@@ -41,7 +41,8 @@
 														  '("finished" "exited" "connection broken"))
 											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections))
 											(webchat-server--SAY-internal webchat-server--who (format (encode-coding-string  "%s离开了聊天室" 'utf-8) (process-get proc 'who)))
-											(delete-process proc))))))
+											(delete-process proc)
+											(webchat-server--cast-user-list))))))
 
 (defun webchat-server--format-message (who content)
   "格式化聊天内容"
@@ -52,7 +53,8 @@
 
 (defun webchat-server--REGIST (proc who)
   (process-put process 'who (format "%s@%s" who (process-contact proc :host)))
-  (webchat-server--SAY-internal webchat-server--who (format (encode-coding-string "%s加入了聊天室" 'utf-8) (process-get proc 'who))))
+  (webchat-server--SAY-internal webchat-server--who (format (encode-coding-string "%s加入了聊天室" 'utf-8) (process-get proc 'who)))
+  (webchat-server--cast-user-list))
 
 (defun webchat-server--SAY (proc content)
   (let ((who (process-get process 'who)))
@@ -70,10 +72,12 @@
 		(insert  upload-file-data)))
 	(lispy-process-send proc 'UPLOAD-RESPONSE httpd-port upload-file-path)))
 
-(defun webchat-server--REQUEST-USER-LIST (proc)
+(defun webchat-server--cast-user-list ()
   (let ((user-list (mapcar (lambda (proc)
 							 (process-get proc 'who)) webchat-server--push-client-connections)))
-	(lispy-process-send proc 'REQUEST-USER-LIST-RESPONSE user-list)))
+	(mapc (lambda (proc)
+			(lispy-process-send proc 'SYNC-USER-LIST user-list))
+		  webchat-server--push-client-connections)))
 
 ;; (defun webchat-server--REQUIRE-FILE (proc require-file-path start end)
 ;;   (let ((file-data (with-temp-buffer

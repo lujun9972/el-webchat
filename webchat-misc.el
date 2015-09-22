@@ -76,22 +76,14 @@ filter function的函数签名应该为(process &rest objs)
   "类似`process-send-string' 但发送的是lisp object"
   (process-send-string process (prin1-to-string objs)))
 
-(defun set-lispy-process-filter (process filter &optional store-msg-property)
-  "类似`set-filter-filter' 但是`filter'的函数参数应该为(process &rest objs)
-该函数会使用process的'output property临时存放收到的字符串,可以通过参数store-msg-property来设置存储在哪个property"
-  (lexical-let* ((ori-filter-fn filter)
-				 (store-msg-property (or  store-msg-property
-										  'output)))
-	(set-process-filter process
-						(lambda (process msg)
-						  (let ((content (process-get process store-msg-property))
-								result obj)
-							(setq content (concat content msg))
-							(while (setq result (ignore-errors (read-from-string content)))
-							  (setq content (substring content (cdr result)))
-							  (setq obj (car result))
-							  (apply ori-filter-fn process obj))
-							(process-put process store-msg-property content))))))
+(defun lispy-process-send-wait (process wait-flag &rest objs)
+  "类似`lispy-process-send' 但会等待回应
+其中会设置process的'WAIT属性为`wait-flag. 并等待回应函数将'WAIT属性清为nil"
+  (process-put process 'WAIT 'wait-flag)
+  (process-send-string process (prin1-to-string objs))
+  (while (process-get process 'WAIT)
+	(accept-process-output process 0.05)))
+
 (defun insert-function-button (label fn)
   "插入名为`label'的按钮,当按下时会出发fn函数"
   (insert-button label 'follow-link t 'face 'mode-line-inactive 'action fn))
