@@ -82,7 +82,7 @@ filter function的函数签名应该为(process &rest objs)
 (defun lispy-process-send-wait (process wait-flag &rest objs)
   "类似`lispy-process-send' 但会等待回应
 其中会设置process的'WAIT属性为`wait-flag. 并等待回应函数将'WAIT属性清为nil"
-  (process-put process 'WAIT 'wait-flag)
+  (process-put process 'WAIT wait-flag)
   (process-send-string process (prin1-to-string objs))
   (while (process-get process 'WAIT)
 	(accept-process-output process 0.05)))

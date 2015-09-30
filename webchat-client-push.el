@@ -72,6 +72,7 @@
   "在buffer中插入upload file url"
   (let ((host (process-contact proc :host)))
 	(with-current-buffer webchat-client-talk-buffer
+	  (goto-char (point-max))
 	  (insert (format "[[http://%s:%s/%s]]" host http-port upload-file-path)))))
 
 (defvar webchat-client--user-list nil
@@ -100,6 +101,9 @@
 
 (defun webchat-client-toggle-image ()
   (setq webchat-client-display-image (not webchat-client-display-image)))
+
+(defvar webchat-client--whom 'ALL
+  "指明发送消息給谁,默认为'ALL表示所有人")
 
 (defun webchat-talk (host port who)
   (interactive (list (read-string "请输入服务器地址: " "127.0.0.1")
@@ -147,7 +151,7 @@
 									  (goto-char (point-min))
 									  (forward-line)
 									  (let ((content (encode-coding-string  (delete-and-extract-region (point) (point-max)) 'utf-8)))
-										(lispy-process-send webchat-client--process 'TALK-TO content))))
+										(lispy-process-send webchat-client--process 'TALK-TO webchat-client--whom content))))
   (lispy-process-send webchat-client--process 'REGIST who))
 
 (defun webchat-quit ()
