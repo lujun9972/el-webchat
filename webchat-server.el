@@ -40,7 +40,7 @@
 															(string-match-p reg event))
 														  '("finished" "exited" "connection broken"))
 											(setq webchat-server--push-client-connections (remove proc webchat-server--push-client-connections))
-											(webchat-server--SAY-internal webchat-server--who (format (encode-coding-string  "%s离开了聊天室" 'utf-8) (process-get proc 'who)))
+											(webchat-server--TALK-TO-internal webchat-server--who (format (encode-coding-string  "%s离开了聊天室" 'utf-8) (process-get proc 'who)))
 											(delete-process proc)
 											(webchat-server--cast-user-list))))))
 
@@ -53,16 +53,16 @@
 
 (defun webchat-server--REGIST (proc who)
   (process-put process 'who (format "%s@%s" who (process-contact proc :host)))
-  (webchat-server--SAY-internal webchat-server--who (format (encode-coding-string "%s加入了聊天室" 'utf-8) (process-get proc 'who)))
+  (webchat-server--TALK-TO-internal webchat-server--who (format (encode-coding-string "%s加入了聊天室" 'utf-8) (process-get proc 'who)))
   (webchat-server--cast-user-list))
 
-(defun webchat-server--SAY (proc content)
+(defun webchat-server--TALK-TO (proc content)
   (let ((who (process-get process 'who)))
-	(webchat-server--SAY-internal who content)))
+	(webchat-server--TALK-TO-internal who content)))
 
-(defun webchat-server--SAY-internal (who content)
+(defun webchat-server--TALK-TO-internal (who content)
   (mapc (lambda (proc)
-		  (lispy-process-send proc 'SAY-RESPONSE (webchat-server--format-message who content)))
+		  (lispy-process-send proc 'TALK-TO-RESPONSE (webchat-server--format-message who content)))
 		webchat-server--push-client-connections))
 
 (defun webchat-server--UPLOAD (proc upload-file-name upload-file-data)

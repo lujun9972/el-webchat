@@ -39,7 +39,7 @@
   (defvar webchat-client-last-desktop-notification-id nil
 	"上一次通知的notification id"))
 
-(defun webchat-client--SAY-RESPONSE (proc content)
+(defun webchat-client--TALK-TO-RESPONSE (proc content)
   "在buffer内显示聊天内容"
   (let ((webchat-client-content-window (get-buffer-window (get-buffer-create webchat-client-content-buffer)))
 		title body)
@@ -87,7 +87,7 @@
 		 (file-data (with-temp-buffer
 					  (insert-file-contents-literally file)
 					  (buffer-string))))
-	(lispy-process-send-wait webchat-client--process 'UPLOAD file file-data)))
+	(lispy-process-send-wait webchat-client--process 'UPLOAD-RESPONSE 'UPLOAD file file-data)))
 
 
 (defun webchat-client-screenshot-upload (&optional file)
@@ -147,12 +147,7 @@
 									  (goto-char (point-min))
 									  (forward-line)
 									  (let ((content (encode-coding-string  (delete-and-extract-region (point) (point-max)) 'utf-8)))
-										(lispy-process-send webchat-client--process 'SAY content))))
-  (local-set-key (kbd "@") (lambda ()
-							 (interactive)
-							 "Function called when @ is pressed in interactive mode to talk"
-							 (insert "@" (popup-menu* webchat-client--user-list))))
-  
+										(lispy-process-send webchat-client--process 'TALK-TO content))))
   (lispy-process-send webchat-client--process 'REGIST who))
 
 (defun webchat-quit ()
