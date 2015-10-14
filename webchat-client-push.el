@@ -96,6 +96,8 @@
   (setq file (or file "myscreen"))
   (cond ((eq system-type 'gnu/linux)
 		 (call-process (format "%sjp.sh" default-directory) nil nil nil file))
+		((eq system-type 'windows-nt)
+		 (call-process (format "%sjp.bat" default-directory) nil nil nil file))
 		(t (error "不知道如何截屏")))
   (webchat-client-upload-file (format "%s.png" file)))
 
